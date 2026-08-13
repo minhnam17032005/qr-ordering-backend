@@ -1,0 +1,48 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35506.116 d17.12
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QROrdering.API", "QROrdering.API\QROrdering.API.csproj", "{EB55AE63-0195-4FB0-B3BC-187633A36D9D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{0C8A27B5-C5BF-49A6-954F-4E230E8A49A2}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QROrdering.Domain", "QROrdering.Domain\QROrdering.Domain.csproj", "{2A05D812-CB0C-445A-BC0B-6F97D61E4070}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QROrdering.Application", "QROrdering.Application\QROrdering.Application.csproj", "{4E67AA7F-7BAD-44EB-AF51-074A816C64D3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "QROrdering.Infrastructure", "QROrdering.Infrastructure\QROrdering.Infrastructure.csproj", "{87344B4C-E6AF-406B-AFC4-91576ADF6214}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{EB55AE63-0195-4FB0-B3BC-187633A36D9D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB55AE63-0195-4FB0-B3BC-187633A36D9D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB55AE63-0195-4FB0-B3BC-187633A36D9D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB55AE63-0195-4FB0-B3BC-187633A36D9D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A05D812-CB0C-445A-BC0B-6F97D61E4070}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A05D812-CB0C-445A-BC0B-6F97D61E4070}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A05D812-CB0C-445A-BC0B-6F97D61E4070}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A05D812-CB0C-445A-BC0B-6F97D61E4070}.Release|Any CPU.Build.0 = Release|Any CPU
+		{4E67AA7F-7BAD-44EB-AF51-074A816C64D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4E67AA7F-7BAD-44EB-AF51-074A816C64D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4E67AA7F-7BAD-44EB-AF51-074A816C64D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4E67AA7F-7BAD-44EB-AF51-074A816C64D3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{87344B4C-E6AF-406B-AFC4-91576ADF6214}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{87344B4C-E6AF-406B-AFC4-91576ADF6214}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{87344B4C-E6AF-406B-AFC4-91576ADF6214}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{87344B4C-E6AF-406B-AFC4-91576ADF6214}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{EB55AE63-0195-4FB0-B3BC-187633A36D9D} = {0C8A27B5-C5BF-49A6-954F-4E230E8A49A2}
+		{2A05D812-CB0C-445A-BC0B-6F97D61E4070} = {0C8A27B5-C5BF-49A6-954F-4E230E8A49A2}
+		{4E67AA7F-7BAD-44EB-AF51-074A816C64D3} = {0C8A27B5-C5BF-49A6-954F-4E230E8A49A2}
+		{87344B4C-E6AF-406B-AFC4-91576ADF6214} = {0C8A27B5-C5BF-49A6-954F-4E230E8A49A2}
+	EndGlobalSection
+EndGlobal
