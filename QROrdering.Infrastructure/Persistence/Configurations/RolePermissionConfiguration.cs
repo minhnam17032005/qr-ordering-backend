@@ -1,36 +1,55 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using QROrdering.Domain.Entities;
+using QROrdering.Domain.Entities.Authorization;
 
 namespace QROrdering.Infrastructure.Persistence.Configurations
 {
-    // Cấu hình bảng: RolePermissions
-    public class RolePermissionConfiguration : IEntityTypeConfiguration<RolePermission>
+    public class RolePermissionConfiguration
+        : IEntityTypeConfiguration<RolePermission>
     {
         public void Configure(EntityTypeBuilder<RolePermission> builder)
         {
+            // ============================================================
+            // TABLE
+            // ============================================================
+
             builder.ToTable("RolePermissions");
 
-            // =========================
-            // Primary Key
-            // =========================
-            // Prevent duplicate Role + Permission
+
+            // ============================================================
+            // PRIMARY KEY
+            // ============================================================
+
             builder.HasKey(x => new
             {
                 x.RoleId,
                 x.PermissionId
             });
 
-            // =========================
-            // Relationships
-            // =========================
-            // Relationship: Role 1 - N RolePermission
+            // ============================================================
+            // INDEXES
+            // ============================================================
+
+            // Một Role không được gán cùng một Permission nhiều lần
+            builder.HasIndex(x => new
+            {
+                x.RoleId,
+                x.PermissionId
+            })
+            .IsUnique();
+
+            // ============================================================
+            // RELATIONSHIPS
+            // ============================================================
+
+            // Role 1 - N RolePermission
             builder.HasOne(x => x.Role)
                 .WithMany(x => x.RolePermissions)
                 .HasForeignKey(x => x.RoleId)
                 .OnDelete(DeleteBehavior.Cascade);
 
-            // Relationship: Permission 1 - N RolePermission
+
+            // Permission 1 - N RolePermission
             builder.HasOne(x => x.Permission)
                 .WithMany(x => x.RolePermissions)
                 .HasForeignKey(x => x.PermissionId)

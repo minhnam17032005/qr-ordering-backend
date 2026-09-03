@@ -1,23 +1,20 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using QROrdering.Domain.Entities.Ordering;
 using QROrdering.Domain.Enums;
 
-namespace QROrdering.Domain.Entities
+namespace QROrdering.Domain.Entities.RestaurantManagement
 {
     public class RestaurantTable : BaseEntity
     {
         public Guid RestaurantId { get; set; }
 
-        [Range(1, int.MaxValue)]
         public int TableNumber { get; set; }
 
-        [Required]
-        [MaxLength(500)]
         public string QRCode { get; set; } = null!;
 
-        [Required]
         public TableStatus Status { get; set; }
 
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; } 
 
 
         // Navigation Properties

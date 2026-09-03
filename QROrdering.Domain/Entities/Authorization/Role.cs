@@ -1,26 +1,25 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using QROrdering.Domain.Entities.Membership;
+using QROrdering.Domain.Entities.RestaurantManagement;
 
-namespace QROrdering.Domain.Entities
+namespace QROrdering.Domain.Entities.Authorization
 {
     public class Role : BaseEntity
     {
         public Guid RestaurantId { get; set; }
 
-        [Required]
-        [MaxLength(100)]
         public string Name { get; set; } = null!;
 
-        [MaxLength(500)]
         public string? Description { get; set; }
 
-        public bool IsActive { get; set; } = true;
+        public bool IsActive { get; set; } 
 
         // Navigation Properties
 
         public Restaurant Restaurant { get; set; } = null!;
 
-        public ICollection<UserRole> UserRoles { get; set; }
-            = new List<UserRole>();
+        public ICollection<MemberRole> MemberRoles { get; set; }
+            = new List<MemberRole>();
 
         public ICollection<RolePermission> RolePermissions { get; set; }
             = new List<RolePermission>();

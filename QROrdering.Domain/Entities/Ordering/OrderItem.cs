@@ -1,24 +1,22 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using QROrdering.Domain.Entities.RestaurantManagement;
 using QROrdering.Domain.Enums;
 
-namespace QROrdering.Domain.Entities
+namespace QROrdering.Domain.Entities.Ordering
 {
     public class OrderItem : BaseEntity
     {
+        public Guid RestaurantId { get; set; }
         public Guid OrderId { get; set; }
 
         public Guid ProductId { get; set; }
 
-        [Range(1, int.MaxValue)]
         public int Quantity { get; set; }
 
-        [Range(0, double.MaxValue)]
         public decimal UnitPrice { get; set; }
 
-        [MaxLength(500)]
         public string? Note { get; set; }
 
-        [Required]
         public OrderItemStatus Status { get; set; }
 
         // Navigation Properties

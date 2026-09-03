@@ -1,36 +1,74 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using QROrdering.Domain.Entities;
+using QROrdering.Domain.Entities.Ordering;
 
 namespace QROrdering.Infrastructure.Persistence.Configurations
 {
-    // Cấu hình bảng: RevenueDaily
-    public class RevenueDailyConfiguration : IEntityTypeConfiguration<RevenueDaily>
+    public class RevenueDailyConfiguration
+        : IEntityTypeConfiguration<RevenueDaily>
     {
         public void Configure(EntityTypeBuilder<RevenueDaily> builder)
         {
+            // ============================================================
+            // TABLE
+            // ============================================================
+
             builder.ToTable("RevenueDaily");
 
-            // BaseEntity: Id, CreatedAt, UpdatedAt
+
+            // ============================================================
+            // BASE ENTITY
+            // ============================================================
+
             builder.ConfigureBaseEntity();
 
-            // Relationship: Restaurant 1 - N RevenueDaily
-            builder.HasOne(x => x.Restaurant)
-                .WithMany(x => x.RevenueDailies)
-                .HasForeignKey(x => x.RestaurantId)
-                .OnDelete(DeleteBehavior.Restrict);
 
-            // =========================
-            // Index / Unique
-            // =========================
+            // ============================================================
+            // PROPERTIES
+            // ============================================================
 
-            // One revenue record per Restaurant per day
+            builder.Property(x => x.RevenueDate)
+                .IsRequired();
+
+            builder.Property(x => x.TotalOrders)
+                .IsRequired();
+
+            builder.Property(x => x.CompletedOrders)
+                .IsRequired();
+
+            builder.Property(x => x.CancelledOrders)
+                .IsRequired();
+
+            builder.Property(x => x.TotalItemsSold)
+                .IsRequired();
+
+            builder.Property(x => x.TotalRevenue)
+                .IsRequired()
+                .HasPrecision(18, 2);
+
+
+            // ============================================================
+            // INDEXES
+            // ============================================================
+
+            // Mỗi Restaurant chỉ có một bản ghi doanh thu cho mỗi ngày
             builder.HasIndex(x => new
             {
                 x.RestaurantId,
                 x.RevenueDate
             })
             .IsUnique();
+
+
+            // ============================================================
+            // RELATIONSHIPS
+            // ============================================================
+
+            // Restaurant 1 - N RevenueDaily
+            builder.HasOne(x => x.Restaurant)
+                .WithMany(x => x.RevenueDailies)
+                .HasForeignKey(x => x.RestaurantId)
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

@@ -1,19 +1,19 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using QROrdering.Domain.Entities.RestaurantManagement;
+using QROrdering.Domain.Entities.Membership;
 
 namespace QROrdering.Infrastructure.Persistence.Configurations
 {
-    public class CategoryConfiguration
-        : IEntityTypeConfiguration<Category>
+    public class RestaurantMemberConfiguration
+        : IEntityTypeConfiguration<RestaurantMember>
     {
-        public void Configure(EntityTypeBuilder<Category> builder)
+        public void Configure(EntityTypeBuilder<RestaurantMember> builder)
         {
             // ============================================================
             // TABLE
             // ============================================================
 
-            builder.ToTable("Categories");
+            builder.ToTable("RestaurantMembers");
 
 
             // ============================================================
@@ -27,16 +27,6 @@ namespace QROrdering.Infrastructure.Persistence.Configurations
             // PROPERTIES
             // ============================================================
 
-            builder.Property(x => x.Name)
-                .IsRequired()
-                .HasMaxLength(100);
-
-            builder.Property(x => x.Description)
-                .HasMaxLength(500);
-
-            builder.Property(x => x.ImageUrl)
-                .HasMaxLength(500);
-
             builder.Property(x => x.IsActive)
                 .IsRequired()
                 .HasDefaultValue(true);
@@ -45,7 +35,7 @@ namespace QROrdering.Infrastructure.Persistence.Configurations
             // ALTERNATE KEY
             // ============================================================
 
-            // Dùng làm Principal Key cho composite FK từ Product
+            // Principal key dùng cho Composite FK chống Cross-Tenant
             builder.HasAlternateKey(x => new
             {
                 x.RestaurantId,
@@ -56,24 +46,32 @@ namespace QROrdering.Infrastructure.Persistence.Configurations
             // INDEXES
             // ============================================================
 
-            // Category name unique trong phạm vi Restaurant
+            // Một User chỉ có một membership trong một Restaurant
             builder.HasIndex(x => new
             {
-                x.RestaurantId,
-                x.Name
+                x.UserId,
+                x.RestaurantId
             })
             .IsUnique();
 
 
-            // ============================================================
-            // RELATIONSHIPS
-            // ============================================================
+                // ============================================================
+                // RELATIONSHIPS
+                // ============================================================
 
-            // Restaurant 1 - N Category
-            builder.HasOne(x => x.Restaurant)
-                .WithMany(x => x.Categories)
-                .HasForeignKey(x => x.RestaurantId)
-                .OnDelete(DeleteBehavior.NoAction);
+                // User 1 - N RestaurantMember
+                builder.HasOne(x => x.User)
+                    .WithMany(x => x.RestaurantMembers)
+                    .HasForeignKey(x => x.UserId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+
+                // Restaurant 1 - N RestaurantMember
+                builder.HasOne(x => x.Restaurant)
+                    .WithMany(x => x.RestaurantMembers)
+                    .HasForeignKey(x => x.RestaurantId)
+                    .OnDelete(DeleteBehavior.NoAction);
+
         }
     }
 }

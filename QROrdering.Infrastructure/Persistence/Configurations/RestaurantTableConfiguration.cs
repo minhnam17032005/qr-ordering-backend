@@ -1,41 +1,62 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using QROrdering.Domain.Entities;
-using QROrdering.Domain.Enums;
+using QROrdering.Domain.Entities.RestaurantManagement;
 
 namespace QROrdering.Infrastructure.Persistence.Configurations
 {
-    // Cấu hình bảng: RestaurantTables
-    public class RestaurantTableConfiguration : IEntityTypeConfiguration<RestaurantTable>
+    public class RestaurantTableConfiguration
+        : IEntityTypeConfiguration<RestaurantTable>
     {
         public void Configure(EntityTypeBuilder<RestaurantTable> builder)
         {
+            // ============================================================
+            // TABLE
+            // ============================================================
+
             builder.ToTable("RestaurantTables");
 
-            // BaseEntity: Id, CreatedAt, UpdatedAt
+
+            // ============================================================
+            // BASE ENTITY
+            // ============================================================
+
             builder.ConfigureBaseEntity();
 
-            // =========================
-            // Relationships
-            // =========================
 
-            // Restaurant 1 - N RestaurantTable
-            builder.HasOne(x => x.Restaurant)
-                .WithMany(x => x.RestaurantTables)
-                .HasForeignKey(x => x.RestaurantId)
-                .OnDelete(DeleteBehavior.Restrict);
+            // ============================================================
+            // PROPERTIES
+            // ============================================================
 
-            // RestaurantTable 1 - N CustomerSession
-            builder.HasMany(x => x.CustomerSessions)
-                .WithOne(x => x.RestaurantTable)
-                .HasForeignKey(x => x.TableId)
-                .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(x => x.TableNumber)
+                .IsRequired();
 
-            // =========================
-            // Index / Unique
-            // =========================
+            builder.Property(x => x.QRCode)
+                .IsRequired()
+                .HasMaxLength(500);
 
-            // TableNumber must be unique within the same Restaurant
+            builder.Property(x => x.Status)
+                .IsRequired();
+
+            builder.Property(x => x.IsActive)
+                .IsRequired()
+                .HasDefaultValue(true);
+
+            // ============================================================
+            // ALTERNATE KEY
+            // ============================================================
+
+            // Principal key dùng cho Composite FK chống Cross-Tenant
+            builder.HasAlternateKey(x => new
+            {
+                x.RestaurantId,
+                x.Id
+            });
+
+            // ============================================================
+            // INDEXES
+            // ============================================================
+
+            // TableNumber unique trong phạm vi Restaurant
             builder.HasIndex(x => new
             {
                 x.RestaurantId,
@@ -43,10 +64,20 @@ namespace QROrdering.Infrastructure.Persistence.Configurations
             })
             .IsUnique();
 
-            // QRCode must be globally unique
+            // QRCode unique
             builder.HasIndex(x => x.QRCode)
                 .IsUnique();
 
+
+            // ============================================================
+            // RELATIONSHIPS
+            // ============================================================
+
+            // Restaurant 1 - N RestaurantTable
+            builder.HasOne(x => x.Restaurant)
+                .WithMany(x => x.RestaurantTables)
+                .HasForeignKey(x => x.RestaurantId)
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

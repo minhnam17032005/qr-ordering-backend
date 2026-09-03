@@ -1,63 +1,102 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using QROrdering.Domain.Entities;
+using QROrdering.Domain.Entities.Ordering;
 
 namespace QROrdering.Infrastructure.Persistence.Configurations
 {
-    // Cấu hình bảng: CustomerSessions
-    public class CustomerSessionConfiguration : IEntityTypeConfiguration<CustomerSession>
+    public class CustomerSessionConfiguration
+        : IEntityTypeConfiguration<CustomerSession>
     {
         public void Configure(EntityTypeBuilder<CustomerSession> builder)
         {
+            // ============================================================
+            // TABLE
+            // ============================================================
+
             builder.ToTable("CustomerSessions");
 
-            // BaseEntity: Id, CreatedAt, UpdatedAt
+
+            // ============================================================
+            // BASE ENTITY
+            // ============================================================
+
             builder.ConfigureBaseEntity();
 
-            // =========================
-            // Relationships
-            // =========================
 
-            // Restaurant 1 - N CustomerSession
-            builder.HasOne(x => x.Restaurant)
-                .WithMany(x => x.CustomerSessions)
-                .HasForeignKey(x => x.RestaurantId)
-                .OnDelete(DeleteBehavior.Restrict);
+            // ============================================================
+            // PROPERTIES
+            // ============================================================
 
-            // RestaurantTable 1 - N CustomerSession
-            builder.HasOne(x => x.RestaurantTable)
-                .WithMany(x => x.CustomerSessions)
-                .HasForeignKey(x => x.TableId)
-                .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(x => x.CustomerName)
+                .HasMaxLength(100);
 
-            // CustomerSession 1 - N Order
-            builder.HasMany(x => x.Orders)
-                .WithOne(x => x.CustomerSession)
-                .HasForeignKey(x => x.CustomerSessionId)
-                .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(x => x.SessionToken)
+                .IsRequired()
+                .HasMaxLength(100);
 
-            // =========================
-            // Index / Unique
-            // =========================
+            builder.Property(x => x.Status)
+                .IsRequired();
 
-            // SessionToken identifies a session
+            builder.Property(x => x.StartedAt)
+                .IsRequired();
+
+            builder.Property(x => x.EndedAt)
+                .IsRequired(false);
+
+            // ============================================================
+            // ALTERNATE KEY
+            // ============================================================
+
+            // Principal key dùng cho Composite FK chống Cross-Tenant
+            builder.HasAlternateKey(x => new
+            {
+                x.RestaurantId,
+                x.Id
+            });
+
+            // ============================================================
+            // INDEXES
+            // ============================================================
+
             builder.HasIndex(x => x.SessionToken)
                 .IsUnique();
 
-            // Query sessions by Restaurant + Table
-            builder.HasIndex(x => new
-            {
-                x.RestaurantId,
-                x.TableId
-            });
-
-            // Query active/current sessions
             builder.HasIndex(x => new
             {
                 x.RestaurantId,
                 x.TableId,
                 x.Status
             });
+
+
+            // ============================================================
+            // RELATIONSHIPS
+            // ============================================================
+
+            // Restaurant 1 - N CustomerSession
+            builder.HasOne(x => x.Restaurant)
+                .WithMany(x => x.CustomerSessions)
+                .HasForeignKey(x => x.RestaurantId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+
+            // RestaurantTable 1 - N CustomerSession
+            // Cross-Tenant Protection:
+            // CustomerSession.RestaurantId + CustomerSession.TableId
+            // phải cùng Restaurant với RestaurantTable.
+            builder.HasOne(x => x.RestaurantTable)
+                .WithMany(x => x.CustomerSessions)
+                .HasForeignKey(x => new
+                {
+                    x.RestaurantId,
+                    x.TableId
+                })
+                .HasPrincipalKey(x => new
+                {
+                    x.RestaurantId,
+                    x.Id
+                })
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

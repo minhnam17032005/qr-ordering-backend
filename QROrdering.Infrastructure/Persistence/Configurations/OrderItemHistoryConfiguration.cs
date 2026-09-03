@@ -1,34 +1,67 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using QROrdering.Domain.Entities;
+using QROrdering.Domain.Entities.History;
 
 namespace QROrdering.Infrastructure.Persistence.Configurations
 {
-    // Cấu hình bảng: OrderItemHistories
-    public class OrderItemHistoryConfiguration : IEntityTypeConfiguration<OrderItemHistory>
+    public class OrderItemHistoryConfiguration
+        : IEntityTypeConfiguration<OrderItemHistory>
     {
         public void Configure(EntityTypeBuilder<OrderItemHistory> builder)
         {
+            // ============================================================
+            // TABLE
+            // ============================================================
+
             builder.ToTable("OrderItemHistories");
 
-            // BaseEntity: Id, CreatedAt, UpdatedAt
+
+            // ============================================================
+            // BASE ENTITY
+            // ============================================================
+
             builder.ConfigureBaseEntity();
 
-            // Relationship: OrderHistory 1 - N OrderItemHistory
+
+            // ============================================================
+            // PROPERTIES
+            // ============================================================
+
+            builder.Property(x => x.ProductName)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            builder.Property(x => x.Quantity)
+                .IsRequired();
+
+            builder.Property(x => x.UnitPrice)
+                .IsRequired()
+                .HasPrecision(18, 2);
+
+            builder.Property(x => x.Status)
+                .IsRequired();
+
+
+            // ============================================================
+            // INDEXES
+            // ============================================================
+
+            // Tìm các item history của một OrderHistory
+            builder.HasIndex(x => x.OrderHistoryId);
+
+            // Tìm lịch sử theo Product gốc nếu có nhu cầu
+            builder.HasIndex(x => x.ProductId);
+
+
+            // ============================================================
+            // RELATIONSHIPS
+            // ============================================================
+
+            // OrderHistory 1 - N OrderItemHistory
             builder.HasOne(x => x.OrderHistory)
                 .WithMany(x => x.OrderItemHistories)
                 .HasForeignKey(x => x.OrderHistoryId)
                 .OnDelete(DeleteBehavior.Cascade);
-
-            // =========================
-            // Index
-            // =========================
-
-            // Query items by OrderHistory
-            builder.HasIndex(x => x.OrderHistoryId);
-
-            // Query history items by Product
-            builder.HasIndex(x => x.ProductId);
         }
     }
 }

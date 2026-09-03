@@ -1,50 +1,76 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using QROrdering.Domain.Entities;
+using QROrdering.Domain.Entities.Authorization;
 
 namespace QROrdering.Infrastructure.Persistence.Configurations
 {
-    // Cấu hình bảng: Roles
-    public class RoleConfiguration : IEntityTypeConfiguration<Role>
+    public class RoleConfiguration
+        : IEntityTypeConfiguration<Role>
     {
         public void Configure(EntityTypeBuilder<Role> builder)
         {
+            // ============================================================
+            // TABLE
+            // ============================================================
+
             builder.ToTable("Roles");
 
-            // BaseEntity: Id, CreatedAt, UpdatedAt
+
+            // ============================================================
+            // BASE ENTITY
+            // ============================================================
+
             builder.ConfigureBaseEntity();
 
-            // Relationship: Restaurant 1 - N Role
-            builder.HasOne(x => x.Restaurant)
-                .WithMany(x => x.Roles)
-                .HasForeignKey(x => x.RestaurantId)
-                .OnDelete(DeleteBehavior.Restrict);
 
-            // Relationship: Role N - N User
-            // Thông qua bảng trung gian UserRole
-            builder.HasMany(x => x.UserRoles)
-                .WithOne(x => x.Role)
-                .HasForeignKey(x => x.RoleId)
-                .OnDelete(DeleteBehavior.Cascade);
+            // ============================================================
+            // PROPERTIES
+            // ============================================================
 
-            // Relationship: Role N - N Permission
-            // Thông qua bảng trung gian RolePermission
-            builder.HasMany(x => x.RolePermissions)
-                .WithOne(x => x.Role)
-                .HasForeignKey(x => x.RoleId)
-                .OnDelete(DeleteBehavior.Cascade);
+            builder.Property(x => x.Name)
+                .IsRequired()
+                .HasMaxLength(100);
 
-            // =========================
-            // Index / Unique
-            // =========================
+            builder.Property(x => x.Description)
+                .HasMaxLength(500);
 
-            // Role name must be unique within the same Restaurant
+            builder.Property(x => x.IsActive)
+                .IsRequired()
+                .HasDefaultValue(true);
+
+            // ============================================================
+            // ALTERNATE KEY
+            // ============================================================
+
+            // Principal key dùng cho Composite FK chống Cross-Tenant
+            builder.HasAlternateKey(x => new
+            {
+                x.RestaurantId,
+                x.Id
+            });
+
+            // ============================================================
+            // INDEXES
+            // ============================================================
+
+            // Một nhà hàng không nên có 2 Role cùng tên
             builder.HasIndex(x => new
             {
                 x.RestaurantId,
                 x.Name
             })
             .IsUnique();
+
+
+            // ============================================================
+            // RELATIONSHIPS
+            // ============================================================
+
+            // Restaurant 1 - N Role
+            builder.HasOne(x => x.Restaurant)
+                .WithMany(x => x.Roles)
+                .HasForeignKey(x => x.RestaurantId)
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

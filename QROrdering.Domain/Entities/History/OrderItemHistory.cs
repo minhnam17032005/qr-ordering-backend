@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using QROrdering.Domain.Enums;
 
-namespace QROrdering.Domain.Entities
+namespace QROrdering.Domain.Entities.History
 {
     public class OrderItemHistory : BaseEntity
     {
@@ -9,17 +9,12 @@ namespace QROrdering.Domain.Entities
 
         public Guid ProductId { get; set; }
 
-        [Required]
-        [MaxLength(200)]
         public string ProductName { get; set; } = null!;
 
-        [Range(1, int.MaxValue)]
         public int Quantity { get; set; }
 
-        [Range(0, double.MaxValue)]
         public decimal UnitPrice { get; set; }
 
-        [Required]
         public OrderItemStatus Status { get; set; }
 
         // Navigation Properties

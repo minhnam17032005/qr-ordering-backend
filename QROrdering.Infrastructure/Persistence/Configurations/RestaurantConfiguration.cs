@@ -1,77 +1,71 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using QROrdering.Domain.Entities;
+using QROrdering.Domain.Entities.RestaurantManagement;
 
 namespace QROrdering.Infrastructure.Persistence.Configurations
 {
-    public class RestaurantConfiguration : IEntityTypeConfiguration<Restaurant>
+    public class RestaurantConfiguration
+        : IEntityTypeConfiguration<Restaurant>
     {
         public void Configure(EntityTypeBuilder<Restaurant> builder)
         {
+            // ============================================================
+            // TABLE
+            // ============================================================
+
             builder.ToTable("Restaurants");
 
-            // BaseEntity: Id, CreatedAt, UpdatedAt
+
+            // ============================================================
+            // BASE ENTITY
+            // ============================================================
+
             builder.ConfigureBaseEntity();
 
-            // Relationships
-            builder.HasMany(x => x.RestaurantTables)
-                .WithOne(x => x.Restaurant)
-                .HasForeignKey(x => x.RestaurantId)
-                .OnDelete(DeleteBehavior.Restrict);
 
-            builder.HasMany(x => x.Categories)
-                .WithOne(x => x.Restaurant)
-                .HasForeignKey(x => x.RestaurantId)
-                .OnDelete(DeleteBehavior.Restrict);
+            // ============================================================
+            // PROPERTIES
+            // ============================================================
 
-            builder.HasMany(x => x.Products)
-                .WithOne(x => x.Restaurant)
-                .HasForeignKey(x => x.RestaurantId)
-                .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(x => x.Name)
+                .IsRequired()
+                .HasMaxLength(200);
 
-            builder.HasMany(x => x.Users)
-                .WithOne(x => x.Restaurant)
-                .HasForeignKey(x => x.RestaurantId)
-                .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(x => x.Address)
+                .IsRequired()
+                .HasMaxLength(500);
 
-            builder.HasMany(x => x.Roles)
-                .WithOne(x => x.Restaurant)
-                .HasForeignKey(x => x.RestaurantId)
-                .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(x => x.PhoneNumber)
+                .IsRequired()
+                .HasMaxLength(20);
 
-            builder.HasMany(x => x.CustomerSessions)
-                .WithOne(x => x.Restaurant)
-                .HasForeignKey(x => x.RestaurantId)
-                .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(x => x.Email)
+                .IsRequired()
+                .HasMaxLength(255);
 
-            builder.HasMany(x => x.Orders)
-                .WithOne(x => x.Restaurant)
-                .HasForeignKey(x => x.RestaurantId)
-                .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(x => x.Description)
+                .HasMaxLength(1000);
 
-            builder.HasMany(x => x.Notifications)
-                .WithOne(x => x.Restaurant)
-                .HasForeignKey(x => x.RestaurantId)
-                .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(x => x.LogoUrl)
+                .HasMaxLength(500);
 
-            builder.HasMany(x => x.RevenueDailies)
-                .WithOne(x => x.Restaurant)
-                .HasForeignKey(x => x.RestaurantId)
-                .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(x => x.IsActive)
+                .IsRequired()
+                .HasDefaultValue(true);
 
-            builder.HasMany(x => x.OrderHistories)
-                .WithOne(x => x.Restaurant)
-                .HasForeignKey(x => x.RestaurantId)
-                .OnDelete(DeleteBehavior.Restrict);
 
-            // =========================
-            // Index / Unique
-            // =========================
+            // ============================================================
+            // INDEXES
+            // ============================================================
 
-            // Restaurant email must be unique
-            builder.HasIndex(x => x.Email)
-                .IsUnique();
+            builder.HasIndex(x => x.Name);
 
+            builder.HasIndex(x => x.Email);
+
+
+            // ============================================================
+            // RELATIONSHIPS
+            // ============================================================
         }
     }
 }

@@ -1,63 +1,73 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using QROrdering.Domain.Entities;
+using QROrdering.Domain.Entities.Identity;
 
 namespace QROrdering.Infrastructure.Persistence.Configurations
 {
-    // Cấu hình bảng: Users
-    public class UserConfiguration : IEntityTypeConfiguration<User>
+    public class UserConfiguration
+        : IEntityTypeConfiguration<User>
     {
         public void Configure(EntityTypeBuilder<User> builder)
         {
+            // ============================================================
+            // TABLE
+            // ============================================================
+
             builder.ToTable("Users");
 
-            // BaseEntity: Id, CreatedAt, UpdatedAt
+
+            // ============================================================
+            // BASE ENTITY
+            // ============================================================
+
             builder.ConfigureBaseEntity();
 
-            // Relationship: Restaurant 1 - N User
-            builder.HasOne(x => x.Restaurant)
-                .WithMany(x => x.Users)
-                .HasForeignKey(x => x.RestaurantId)
-                .OnDelete(DeleteBehavior.Restrict);
 
-            // Relationship: User 1 - N UserSession
-            builder.HasMany(x => x.UserSessions)
-                .WithOne(x => x.User)
-                .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+            // ============================================================
+            // PROPERTIES
+            // ============================================================
 
-            // Relationship: User N - N Role
-            // Thông qua bảng trung gian UserRole
-            builder.HasMany(x => x.UserRoles)
-                .WithOne(x => x.User)
-                .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+            builder.Property(x => x.FullName)
+                .IsRequired()
+                .HasMaxLength(200);
 
-            // Relationship: User 1 - N Notification
-            builder.HasMany(x => x.Notifications)
-                .WithOne(x => x.User)
-                .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(x => x.Username)
+                .IsRequired()
+                .HasMaxLength(100);
 
-            // =========================
-            // Index / Unique
-            // =========================
+            builder.Property(x => x.Email)
+                .IsRequired()
+                .HasMaxLength(255);
 
-            // Username must be unique within the same Restaurant
-            builder.HasIndex(x => new
-            {
-                x.RestaurantId,
-                x.Username
-            })
-            .IsUnique();
+            builder.Property(x => x.PasswordHash)
+                .IsRequired()
+                .HasMaxLength(255);
 
-            // Email must be unique within the same Restaurant
-            builder.HasIndex(x => new
-            {
-                x.RestaurantId,
-                x.Email
-            })
-            .IsUnique();
+            builder.Property(x => x.PhoneNumber)
+                .HasMaxLength(20);
+
+            builder.Property(x => x.AvatarUrl)
+                .HasMaxLength(500);
+
+            builder.Property(x => x.IsActive)
+                .IsRequired()
+                .HasDefaultValue(true);
+
+
+            // ============================================================
+            // INDEXES
+            // ============================================================
+
+            builder.HasIndex(x => x.Username)
+                .IsUnique();
+
+            builder.HasIndex(x => x.Email)
+                .IsUnique();
+
+
+            // ============================================================
+            // RELATIONSHIPS
+            // ============================================================
         }
     }
 }

@@ -1,47 +1,91 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using QROrdering.Domain.Entities;
+using QROrdering.Domain.Entities.History;
+using QROrdering.Domain.Entities.Ordering;
 
 namespace QROrdering.Infrastructure.Persistence.Configurations
 {
-    // Cấu hình bảng: OrderHistories
-    public class OrderHistoryConfiguration : IEntityTypeConfiguration<OrderHistory>
+    public class OrderHistoryConfiguration
+        : IEntityTypeConfiguration<OrderHistory>
     {
         public void Configure(EntityTypeBuilder<OrderHistory> builder)
         {
+            // ============================================================
+            // TABLE
+            // ============================================================
+
             builder.ToTable("OrderHistories");
 
-            // BaseEntity: Id, CreatedAt, UpdatedAt
+
+            // ============================================================
+            // BASE ENTITY
+            // ============================================================
+
             builder.ConfigureBaseEntity();
 
-            // Relationship: Restaurant 1 - N OrderHistory
-            builder.HasOne(x => x.Restaurant)
-                .WithMany(x => x.OrderHistories)
-                .HasForeignKey(x => x.RestaurantId)
-                .OnDelete(DeleteBehavior.Restrict);
 
-            // Relationship: OrderHistory 1 - N OrderItemHistory
-            builder.HasMany(x => x.OrderItemHistories)
-                .WithOne(x => x.OrderHistory)
-                .HasForeignKey(x => x.OrderHistoryId)
-                .OnDelete(DeleteBehavior.Cascade);
+            // ============================================================
+            // PROPERTIES
+            // ============================================================
 
-            // =========================
-            // Index / Unique
-            // =========================
+            builder.Property(x => x.OrderCode)
+                .IsRequired()
+                .HasMaxLength(50);
 
-            // Query order history by Restaurant
-            builder.HasIndex(x => x.RestaurantId);
+            builder.Property(x => x.TableNumber)
+                .IsRequired();
 
-            // Query history by Order
+            builder.Property(x => x.OrderStatus)
+                .IsRequired();
+
+            builder.Property(x => x.PaymentMethod)
+                .IsRequired();
+
+            builder.Property(x => x.TotalAmount)
+                .IsRequired()
+                .HasPrecision(18, 2);
+
+            // ============================================================
+            // INDEXES
+            // ============================================================
+
+            // Tìm toàn bộ lịch sử của một Order
             builder.HasIndex(x => x.OrderId);
 
-            // Query history by Restaurant + OrderCode
+            // Query lịch sử theo Restaurant + thời gian
             builder.HasIndex(x => new
             {
                 x.RestaurantId,
-                x.OrderCode
+                x.CreatedAt
             });
+
+            // ============================================================
+            // RELATIONSHIPS
+            // ============================================================
+
+            // Restaurant 1 - N OrderHistory
+            builder.HasOne(x => x.Restaurant)
+                .WithMany(x => x.OrderHistories)
+                .HasForeignKey(x => x.RestaurantId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            // Order 1 - N OrderHistory
+            // Cross-Tenant Protection:
+            // OrderHistory.RestaurantId + OrderHistory.OrderId
+            // phải cùng Restaurant với Order.
+            builder.HasOne<Order>()
+                .WithMany()
+                .HasForeignKey(x => new
+                {
+                    x.RestaurantId,
+                    x.OrderId
+                })
+                .HasPrincipalKey(x => new
+                {
+                    x.RestaurantId,
+                    x.Id
+                })
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

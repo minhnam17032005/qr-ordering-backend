@@ -1,7 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using QROrdering.Domain.Entities.Identity;
+using QROrdering.Domain.Entities.RestaurantManagement;
 using QROrdering.Domain.Enums;
 
-namespace QROrdering.Domain.Entities
+namespace QROrdering.Domain.Entities.Ordering
 {
     public class Notification : BaseEntity
     {
@@ -11,15 +13,10 @@ namespace QROrdering.Domain.Entities
 
         public Guid? UserId { get; set; }
 
-        [Required]
-        [MaxLength(200)]
         public string Title { get; set; } = null!;
 
-        [Required]
-        [MaxLength(1000)]
         public string Content { get; set; } = null!;
 
-        [Required]
         public NotificationType Type { get; set; }
 
         public bool IsRead { get; set; }

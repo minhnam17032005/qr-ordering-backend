@@ -1,37 +1,59 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using QROrdering.Domain.Entities;
+using QROrdering.Domain.Entities.Authorization;
 
 namespace QROrdering.Infrastructure.Persistence.Configurations
 {
-    // Cấu hình bảng: Permissions
-    public class PermissionConfiguration : IEntityTypeConfiguration<Permission>
+    public class PermissionConfiguration
+        : IEntityTypeConfiguration<Permission>
     {
         public void Configure(EntityTypeBuilder<Permission> builder)
         {
+            // Table
             builder.ToTable("Permissions");
 
-            // BaseEntity: Id, CreatedAt, UpdatedAt
+            // Base Entity
             builder.ConfigureBaseEntity();
 
-            // Relationship: Permission N - N Role
-            // Thông qua bảng trung gian RolePermission
-            builder.HasMany(x => x.RolePermissions)
-                .WithOne(x => x.Permission)
-                .HasForeignKey(x => x.PermissionId)
-                .OnDelete(DeleteBehavior.Cascade);
 
-            // =========================
-            // Index / Unique
-            // =========================
+            // ============================================================
+            // PROPERTIES
+            // ============================================================
 
-            // Permission is uniquely identified by API endpoint + HTTP method
+            builder.Property(x => x.Name)
+                .IsRequired()
+                .HasMaxLength(100);
+
+            builder.Property(x => x.Description)
+                .HasMaxLength(500);
+
+            builder.Property(x => x.ApiPath)
+                .IsRequired()
+                .HasMaxLength(200);
+
+            builder.Property(x => x.Method)
+                .IsRequired();
+
+            builder.Property(x => x.Module)
+                .IsRequired()
+                .HasMaxLength(100);
+
+
+            // ============================================================
+            // INDEXES
+            // ============================================================
+
             builder.HasIndex(x => new
             {
                 x.ApiPath,
                 x.Method
             })
             .IsUnique();
+
+
+            // ============================================================
+            // RELATIONSHIPS
+            // ============================================================
         }
     }
 }

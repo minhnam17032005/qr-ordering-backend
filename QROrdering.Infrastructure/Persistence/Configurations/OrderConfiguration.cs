@@ -1,58 +1,68 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using QROrdering.Domain.Entities;
+using QROrdering.Domain.Entities.Ordering;
 
 namespace QROrdering.Infrastructure.Persistence.Configurations
 {
-    // Cấu hình bảng: Orders
-    public class OrderConfiguration : IEntityTypeConfiguration<Order>
+    public class OrderConfiguration
+        : IEntityTypeConfiguration<Order>
     {
         public void Configure(EntityTypeBuilder<Order> builder)
         {
+            // ============================================================
+            // TABLE
+            // ============================================================
+
             builder.ToTable("Orders");
 
-            // BaseEntity: Id, CreatedAt, UpdatedAt
+
+            // ============================================================
+            // BASE ENTITY
+            // ============================================================
+
             builder.ConfigureBaseEntity();
 
-            // =========================
-            // Relationships
-            // =========================
 
-            // Restaurant 1 - N Order
-            builder.HasOne(x => x.Restaurant)
-                .WithMany(x => x.Orders)
-                .HasForeignKey(x => x.RestaurantId)
-                .OnDelete(DeleteBehavior.Restrict);
+            // ============================================================
+            // PROPERTIES
+            // ============================================================
 
-            // CustomerSession 1 - N Order
-            builder.HasOne(x => x.CustomerSession)
-                .WithMany(x => x.Orders)
-                .HasForeignKey(x => x.CustomerSessionId)
-                .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(x => x.OrderCode)
+                .IsRequired()
+                .HasMaxLength(50);
 
-            // Order 1 - N OrderItem
-            builder.HasMany(x => x.OrderItems)
-                .WithOne(x => x.Order)
-                .HasForeignKey(x => x.OrderId)
-                .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(x => x.Status)
+                .IsRequired();
 
-            // Order 1 - N Payment
-            builder.HasMany(x => x.Payments)
-                .WithOne(x => x.Order)
-                .HasForeignKey(x => x.OrderId)
-                .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(x => x.Note)
+                .HasMaxLength(500);
 
-            // Order 1 - N Notification
-            builder.HasMany(x => x.Notifications)
-                .WithOne(x => x.Order)
-                .HasForeignKey(x => x.OrderId)
-                .OnDelete(DeleteBehavior.Restrict);
+            builder.Property(x => x.TotalAmount)
+                .IsRequired()
+                .HasPrecision(18, 2);
 
-            // =========================
-            // Index / Unique
-            // =========================
+            // ============================================================
+            // ALTERNATE KEY
+            // ============================================================
 
-            // OrderCode is unique within Restaurant
+            // Principal key dùng cho Composite FK chống Cross-Tenant
+            builder.HasAlternateKey(x => new
+            {
+                x.RestaurantId,
+                x.Id
+            });
+
+            // ============================================================
+            // INDEXES
+            // ============================================================
+
+            // Tìm Order theo Restaurant
+            builder.HasIndex(x => x.RestaurantId);
+
+            // Tìm Order theo CustomerSession
+            builder.HasIndex(x => x.CustomerSessionId);
+
+            // OrderCode phải unique trong phạm vi Restaurant
             builder.HasIndex(x => new
             {
                 x.RestaurantId,
@@ -60,15 +70,36 @@ namespace QROrdering.Infrastructure.Persistence.Configurations
             })
             .IsUnique();
 
-            // Query orders by Restaurant + Status
-            builder.HasIndex(x => new
-            {
-                x.RestaurantId,
-                x.Status
-            });
 
-            // Query orders by CustomerSession
-            builder.HasIndex(x => x.CustomerSessionId);
+            // ============================================================
+            // RELATIONSHIPS
+            // ============================================================
+
+            // Restaurant 1 - N Order
+            builder.HasOne(x => x.Restaurant)
+                .WithMany(x => x.Orders)
+                .HasForeignKey(x => x.RestaurantId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+
+            // CustomerSession 1 - N Order
+            // Cross-Tenant Protection:
+            // Order.RestaurantId + Order.CustomerSessionId
+            // phải cùng Restaurant với CustomerSession.
+            builder.HasOne(x => x.CustomerSession)
+                .WithMany(x => x.Orders)
+                .HasForeignKey(x => new
+                {
+                    x.RestaurantId,
+                    x.CustomerSessionId
+                })
+                .HasPrincipalKey(x => new
+                {
+                    x.RestaurantId,
+                    x.Id
+                })
+                .OnDelete(DeleteBehavior.NoAction);
+
         }
     }
 }

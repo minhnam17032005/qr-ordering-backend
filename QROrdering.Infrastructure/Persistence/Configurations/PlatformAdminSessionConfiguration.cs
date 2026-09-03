@@ -1,18 +1,19 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
+using QROrdering.Domain.Entities.Platform;
 
 namespace QROrdering.Infrastructure.Persistence.Configurations
 {
-    public class UserSessionConfiguration
-        : IEntityTypeConfiguration<UserSession>
+    public class PlatformAdminSessionConfiguration
+        : IEntityTypeConfiguration<PlatformAdminSession>
     {
-        public void Configure(EntityTypeBuilder<UserSession> builder)
+        public void Configure(EntityTypeBuilder<PlatformAdminSession> builder)
         {
             // ============================================================
             // TABLE
             // ============================================================
 
-            builder.ToTable("UserSessions");
+            builder.ToTable("PlatformAdminSessions");
 
 
             // ============================================================
@@ -30,46 +31,40 @@ namespace QROrdering.Infrastructure.Persistence.Configurations
                 .IsRequired()
                 .HasMaxLength(255);
 
-            builder.Property(x => x.DeviceName)
-                .HasMaxLength(100);
+            builder.Property(x => x.ExpiresAt)
+                .IsRequired();
+
+            builder.Property(x => x.LastActivityAt)
+                .IsRequired();
 
             builder.Property(x => x.IpAddress)
                 .HasMaxLength(45);
 
             builder.Property(x => x.UserAgent)
-                .HasMaxLength(1000);
-
-            builder.Property(x => x.ExpiredAt)
-                .IsRequired();
-
-            builder.Property(x => x.RevokedAt)
-                .IsRequired(false);
-
-            builder.Property(x => x.LastAccessAt)
-                .IsRequired();
+                .HasMaxLength(500);
 
 
             // ============================================================
             // INDEXES
             // ============================================================
 
-            // Query các session của một User
-            builder.HasIndex(x => x.UserId);
+            builder.HasIndex(x => x.PlatformAdminId);
 
-            // RefreshTokenHash cần tìm nhanh khi refresh token
             builder.HasIndex(x => x.RefreshTokenHash)
                 .IsUnique();
+
+            builder.HasIndex(x => x.ExpiresAt);
 
 
             // ============================================================
             // RELATIONSHIPS
             // ============================================================
 
-            // User 1 - N UserSession
-            builder.HasOne(x => x.User)
-                .WithMany(x => x.UserSessions)
-                .HasForeignKey(x => x.UserId)
-                .OnDelete(DeleteBehavior.Cascade);
+            // PlatformAdmin 1 - N PlatformAdminSession
+            builder.HasOne(x => x.PlatformAdmin)
+                .WithMany(x => x.Sessions)
+                .HasForeignKey(x => x.PlatformAdminId)
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

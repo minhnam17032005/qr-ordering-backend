@@ -1,19 +1,19 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using QROrdering.Domain.Entities.RestaurantManagement;
+using QROrdering.Domain.Entities.Platform;
 
 namespace QROrdering.Infrastructure.Persistence.Configurations
 {
-    public class CategoryConfiguration
-        : IEntityTypeConfiguration<Category>
+    public class PlatformAdminConfiguration
+        : IEntityTypeConfiguration<PlatformAdmin>
     {
-        public void Configure(EntityTypeBuilder<Category> builder)
+        public void Configure(EntityTypeBuilder<PlatformAdmin> builder)
         {
             // ============================================================
             // TABLE
             // ============================================================
 
-            builder.ToTable("Categories");
+            builder.ToTable("PlatformAdmins");
 
 
             // ============================================================
@@ -27,53 +27,47 @@ namespace QROrdering.Infrastructure.Persistence.Configurations
             // PROPERTIES
             // ============================================================
 
-            builder.Property(x => x.Name)
+            builder.Property(x => x.FullName)
                 .IsRequired()
                 .HasMaxLength(100);
 
-            builder.Property(x => x.Description)
-                .HasMaxLength(500);
+            builder.Property(x => x.Username)
+                .IsRequired()
+                .HasMaxLength(50);
 
-            builder.Property(x => x.ImageUrl)
+            builder.Property(x => x.Email)
+                .IsRequired()
+                .HasMaxLength(255);
+
+            builder.Property(x => x.PasswordHash)
+                .IsRequired()
+                .HasMaxLength(255);
+
+            builder.Property(x => x.PhoneNumber)
+                .HasMaxLength(20);
+
+            builder.Property(x => x.AvatarUrl)
                 .HasMaxLength(500);
 
             builder.Property(x => x.IsActive)
                 .IsRequired()
                 .HasDefaultValue(true);
 
-            // ============================================================
-            // ALTERNATE KEY
-            // ============================================================
-
-            // Dùng làm Principal Key cho composite FK từ Product
-            builder.HasAlternateKey(x => new
-            {
-                x.RestaurantId,
-                x.Id
-            });
 
             // ============================================================
             // INDEXES
             // ============================================================
 
-            // Category name unique trong phạm vi Restaurant
-            builder.HasIndex(x => new
-            {
-                x.RestaurantId,
-                x.Name
-            })
-            .IsUnique();
+            builder.HasIndex(x => x.Username)
+                .IsUnique();
+
+            builder.HasIndex(x => x.Email)
+                .IsUnique();
 
 
             // ============================================================
             // RELATIONSHIPS
             // ============================================================
-
-            // Restaurant 1 - N Category
-            builder.HasOne(x => x.Restaurant)
-                .WithMany(x => x.Categories)
-                .HasForeignKey(x => x.RestaurantId)
-                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }

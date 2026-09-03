@@ -1,7 +1,8 @@
-﻿namespace QROrdering.Domain.Entities
+﻿namespace QROrdering.Domain.Entities.Authorization
 {
     public class RolePermission
     {
+
         public Guid RoleId { get; set; }
 
         public Guid PermissionId { get; set; }

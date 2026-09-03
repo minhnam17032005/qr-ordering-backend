@@ -1,7 +1,8 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using QROrdering.Domain.Entities.RestaurantManagement;
 using QROrdering.Domain.Enums;
 
-namespace QROrdering.Domain.Entities
+namespace QROrdering.Domain.Entities.History
 {
     public class OrderHistory : BaseEntity
     {
@@ -9,20 +10,14 @@ namespace QROrdering.Domain.Entities
 
         public Guid OrderId { get; set; }
 
-        [Required]
-        [MaxLength(50)]
         public string OrderCode { get; set; } = null!;
 
-        [Range(1, int.MaxValue)]
         public int TableNumber { get; set; }
 
-        [Required]
         public OrderStatus OrderStatus { get; set; }
 
-        [Required]
         public PaymentMethod PaymentMethod { get; set; }
 
-        [Range(0, double.MaxValue)]
         public decimal TotalAmount { get; set; }
 
         // Navigation Properties

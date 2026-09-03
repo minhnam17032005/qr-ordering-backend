@@ -1,5 +1,11 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using QROrdering.Domain.Entities;
+using QROrdering.Domain.Entities.Authorization;
+using QROrdering.Domain.Entities.History;
+using QROrdering.Domain.Entities.Identity;
+using QROrdering.Domain.Entities.Membership;
+using QROrdering.Domain.Entities.Ordering;
+using QROrdering.Domain.Entities.Platform;
+using QROrdering.Domain.Entities.RestaurantManagement;
 
 namespace QROrdering.Infrastructure.Persistence
 {
@@ -10,72 +16,79 @@ namespace QROrdering.Infrastructure.Persistence
         {
         }
 
-        // =========================
-        // Restaurant
-        // =========================
+        // ============================================================
+        // IDENTITY
+        // ============================================================
 
-        public DbSet<Restaurant> Restaurants { get; set; }
+        public DbSet<User> Users => Set<User>();
+        public DbSet<UserSession> UserSessions => Set<UserSession>();
 
-        public DbSet<RestaurantTable> RestaurantTables { get; set; }
 
-        public DbSet<Category> Categories { get; set; }
+        // ============================================================
+        // RESTAURANT MANAGEMENT
+        // ============================================================
 
-        public DbSet<Product> Products { get; set; }
+        public DbSet<Restaurant> Restaurants => Set<Restaurant>();
+        public DbSet<RestaurantTable> RestaurantTables => Set<RestaurantTable>();
+        public DbSet<Category> Categories => Set<Category>();
+        public DbSet<Product> Products => Set<Product>();
+        public DbSet<RevenueDaily> RevenueDailies => Set<RevenueDaily>();
 
-        // =========================
-        // Ordering
-        // =========================
 
-        public DbSet<CustomerSession> CustomerSessions { get; set; }
+        // ============================================================
+        // MEMBERSHIP
+        // ============================================================
 
-        public DbSet<Order> Orders { get; set; }
+        public DbSet<RestaurantMember> RestaurantMembers => Set<RestaurantMember>();
+        public DbSet<MemberRole> MemberRoles => Set<MemberRole>();
 
-        public DbSet<OrderItem> OrderItems { get; set; }
 
-        public DbSet<Payment> Payments { get; set; }
+        // ============================================================
+        // AUTHORIZATION
+        // ============================================================
 
-        // =========================
-        // Order History
-        // =========================
+        public DbSet<Role> Roles => Set<Role>();
+        public DbSet<Permission> Permissions => Set<Permission>();
+        public DbSet<RolePermission> RolePermissions => Set<RolePermission>();
 
-        public DbSet<OrderHistory> OrderHistories { get; set; }
 
-        public DbSet<OrderItemHistory> OrderItemHistories { get; set; }
+        // ============================================================
+        // ORDERING
+        // ============================================================
 
-        // =========================
-        // User & Authorization
-        // =========================
+        public DbSet<CustomerSession> CustomerSessions => Set<CustomerSession>();
+        public DbSet<Order> Orders => Set<Order>();
+        public DbSet<OrderItem> OrderItems => Set<OrderItem>();
+        public DbSet<Payment> Payments => Set<Payment>();
+        public DbSet<Notification> Notifications => Set<Notification>();
+        public DbSet<OrderHistory> OrderHistories => Set<OrderHistory>();
+        public DbSet<OrderItemHistory> OrderItemHistories => Set<OrderItemHistory>();
 
-        public DbSet<User> Users { get; set; }
 
-        public DbSet<UserSession> UserSessions { get; set; }
+        // ============================================================
+        // PLATFORM
+        // ============================================================
 
-        public DbSet<Role> Roles { get; set; }
+        public DbSet<PlatformAdmin> PlatformAdmins => Set<PlatformAdmin>();
+        public DbSet<PlatformAdminSession> PlatformAdminSessions => Set<PlatformAdminSession>();
+        public DbSet<ServiceRegistration> ServiceRegistrations => Set<ServiceRegistration>();
 
-        public DbSet<Permission> Permissions { get; set; }
 
-        public DbSet<RolePermission> RolePermissions { get; set; }
-
-        public DbSet<UserRole> UserRoles { get; set; }
-
-        // =========================
-        // Notification
-        // =========================
-
-        public DbSet<Notification> Notifications { get; set; }
-
-        // =========================
-        // Revenue
-        // =========================
-
-        public DbSet<RevenueDaily> RevenueDailies { get; set; }
+        // ============================================================
+        // MODEL CONFIGURATION
+        // ============================================================
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
 
+            // ========================================================
+            // APPLY ALL ENTITY CONFIGURATIONS
+            // ========================================================
+
             modelBuilder.ApplyConfigurationsFromAssembly(
-                typeof(QROrderingDbContext).Assembly);
+                typeof(QROrderingDbContext).Assembly
+            );
         }
     }
 }

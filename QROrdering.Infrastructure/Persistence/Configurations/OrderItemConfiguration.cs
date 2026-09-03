@@ -1,47 +1,104 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using QROrdering.Domain.Entities;
+using QROrdering.Domain.Entities.Ordering;
 
 namespace QROrdering.Infrastructure.Persistence.Configurations
 {
-    // Cấu hình bảng: OrderItems
-    public class OrderItemConfiguration : IEntityTypeConfiguration<OrderItem>
+    public class OrderItemConfiguration
+        : IEntityTypeConfiguration<OrderItem>
     {
         public void Configure(EntityTypeBuilder<OrderItem> builder)
         {
+            // ============================================================
+            // TABLE
+            // ============================================================
+
             builder.ToTable("OrderItems");
 
-            // BaseEntity: Id, CreatedAt, UpdatedAt
+
+            // ============================================================
+            // BASE ENTITY
+            // ============================================================
+
             builder.ConfigureBaseEntity();
 
-            // Relationship: Order 1 - N OrderItem
-            builder.HasOne(x => x.Order)
-                .WithMany(x => x.OrderItems)
-                .HasForeignKey(x => x.OrderId)
-                .OnDelete(DeleteBehavior.Restrict);
 
-            // Relationship: Product 1 - N OrderItem
-            builder.HasOne(x => x.Product)
-                .WithMany(x => x.OrderItems)
-                .HasForeignKey(x => x.ProductId)
-                .OnDelete(DeleteBehavior.Restrict);
+            // ============================================================
+            // PROPERTIES
+            // ============================================================
 
-            // =========================
-            // Index
-            // =========================
+            builder.Property(x => x.Quantity)
+                .IsRequired();
 
-            // Query items by Order
+            builder.Property(x => x.UnitPrice)
+                .IsRequired()
+                .HasPrecision(18, 2);
+
+            builder.Property(x => x.Note)
+                .HasMaxLength(500);
+
+            builder.Property(x => x.Status)
+                .IsRequired();
+
+
+            // ============================================================
+            // INDEXES
+            // ============================================================
+
+            // Lấy OrderItems theo Order
             builder.HasIndex(x => x.OrderId);
 
-            // Query items by Product
+            // Lấy OrderItems theo Product
             builder.HasIndex(x => x.ProductId);
 
-            // Query items by Order + Status
+            // Hỗ trợ tenant-scoped queries
             builder.HasIndex(x => new
             {
-                x.OrderId,
-                x.Status
+                x.RestaurantId,
+                x.OrderId
             });
+
+
+            // ============================================================
+            // RELATIONSHIPS
+            // ============================================================
+
+            // Order 1 - N OrderItem
+            // Cross-Tenant Protection:
+            // OrderItem.RestaurantId + OrderItem.OrderId
+            // phải cùng Restaurant với Order.
+            builder.HasOne<Order>()
+                .WithMany()
+                .HasForeignKey(x => new
+                {
+                    x.RestaurantId,
+                    x.OrderId
+                })
+                .HasPrincipalKey(x => new
+                {
+                    x.RestaurantId,
+                    x.Id
+                })
+                .OnDelete(DeleteBehavior.NoAction);
+
+
+            // Product 1 - N OrderItem
+            // Cross-Tenant Protection:
+            // OrderItem.RestaurantId + OrderItem.ProductId
+            // phải cùng Restaurant với Product.
+            builder.HasOne(x => x.Product)
+                .WithMany(x => x.OrderItems)
+                .HasForeignKey(x => new
+                {
+                    x.RestaurantId,
+                    x.ProductId
+                })
+                .HasPrincipalKey(x => new
+                {
+                    x.RestaurantId,
+                    x.Id
+                })
+                .OnDelete(DeleteBehavior.NoAction);
         }
     }
 }
