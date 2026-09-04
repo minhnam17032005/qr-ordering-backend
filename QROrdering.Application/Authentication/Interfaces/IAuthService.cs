@@ -1,0 +1,9 @@
+﻿using QROrdering.Application.Authentication.DTOs;
+
+namespace QROrdering.Application.Authentication.Interfaces
+{
+    public interface IAuthService
+    {
+        Task<RegisterResponse> RegisterAsync(RegisterRequest request);
+    }
+}

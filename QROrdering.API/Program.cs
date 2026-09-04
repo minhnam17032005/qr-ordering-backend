@@ -1,4 +1,8 @@
 using Microsoft.EntityFrameworkCore;
+using QROrdering.API.Middleware;
+using QROrdering.Application.Authentication;
+using QROrdering.Application.Authentication.Interfaces;
+using QROrdering.Infrastructure.Authentication;
 using QROrdering.Infrastructure.Persistence;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +15,13 @@ builder.Services.AddDbContext<QROrderingDbContext>(options =>
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
 // =========================
+// Authentication Services
+// =========================
+builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<IPasswordService, PasswordService>();
+
+// =========================
 // Controllers
 // =========================
 builder.Services.AddControllers();
@@ -19,13 +30,18 @@ builder.Services.AddControllers();
 // Swagger / OpenAPI
 // =========================
 builder.Services.AddEndpointsApiExplorer();
-
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
 // =========================
-// Middleware
+// Global Exception Middleware
+// =========================
+app.UseMiddleware<GlobalExceptionMiddleware>();
+app.UseMiddleware<ResponseTimeMiddleware>();
+
+// =========================
+// Swagger
 // =========================
 if (app.Environment.IsDevelopment())
 {
@@ -33,8 +49,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+// =========================
+// HTTPS
+// =========================
 app.UseHttpsRedirection();
 
+// =========================
+// Controllers
+// =========================
 app.MapControllers();
 
 app.Run();
