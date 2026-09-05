@@ -1,6 +1,0 @@
-@QROrdering.Application_HostAddress = http://localhost:5223
-
-GET {{QROrdering.Application_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###

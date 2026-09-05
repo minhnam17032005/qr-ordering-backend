@@ -5,5 +5,8 @@ namespace QROrdering.Application.Authentication.Interfaces
     public interface IAuthService
     {
         Task<RegisterResponse> RegisterAsync(RegisterRequest request);
+
+        Task<(LoginResponse response, string refreshToken)> LoginAsync(
+        LoginRequest request);
     }
 }

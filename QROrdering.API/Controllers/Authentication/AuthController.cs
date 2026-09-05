@@ -27,5 +27,34 @@ namespace QROrdering.API.Controllers.Authentication
                 result,
                 "Registration successful.");
         }
+
+        [HttpPost("login")]
+        [ProducesResponseType(
+            typeof(ApiResponse<LoginResponse>),
+            StatusCodes.Status200OK)]
+                [ProducesResponseType(
+            typeof(ErrorResponse),
+            StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<ApiResponse<LoginResponse>>> Login(
+            LoginRequest request)
+        {
+            var (response, refreshToken) =
+                await _authService.LoginAsync(request);
+
+            Response.Cookies.Append(
+                "refreshToken",
+                refreshToken,
+                new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTimeOffset.UtcNow.AddDays(7)//lưu ý nên sửa khi có thời gian không nên fix cứng 
+                });
+
+            return this.ApiOk(
+                response,
+                "Login successful.");
+        }
     }
 }

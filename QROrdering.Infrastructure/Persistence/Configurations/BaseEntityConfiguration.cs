@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
-using QROrdering.Domain.Entities;
+using QROrdering.Domain;
 
 namespace QROrdering.Infrastructure.Persistence.Configurations
 {

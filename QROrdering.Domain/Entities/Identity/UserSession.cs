@@ -1,4 +1,4 @@
-﻿using QROrdering.Domain.Entities;
+﻿using QROrdering.Domain;
 using QROrdering.Domain.Entities.Identity;
 using System.ComponentModel.DataAnnotations;
 

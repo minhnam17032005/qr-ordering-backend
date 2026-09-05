@@ -1,4 +1,4 @@
-﻿namespace QROrdering.Domain.Entities
+﻿namespace QROrdering.Domain
 {
     public abstract class BaseEntity
     {
