@@ -42,19 +42,15 @@ namespace QROrdering.Application.Authentication
             var username = request.Username.Trim();
             var email = request.Email.Trim().ToLowerInvariant();
 
-            // 2. Check duplicate username
-            var usernameExists =
-                await _userRepository.ExistsByUsernameAsync(username);
+            var exists =
+            await _userRepository.ExistsByUsernameOrEmailAsync(
+                username,
+                email);
 
-            // 3. Check duplicate email
-            var emailExists =
-                await _userRepository.ExistsByEmailAsync(email);
-
-            // 4. Reject if username or email already exists
-            if (usernameExists || emailExists)
+            if (exists)
             {
                 throw new ConflictException(
-                   "Username or email already exists.");
+                    "Username or email already exists.");
             }
 
             // 5. Hash password
@@ -73,6 +69,9 @@ namespace QROrdering.Application.Authentication
             // 7. Save User
             await _userRepository.AddAsync(user);
 
+            // Commit transaction
+            await _unitOfWork.SaveChangesAsync();
+
             // 8. Return response
             return new RegisterResponse
             {
@@ -84,7 +83,7 @@ namespace QROrdering.Application.Authentication
         }
 
         public async Task<(LoginResponse response, string refreshToken)> LoginAsync(
-     LoginRequest request)
+        LoginRequest request)
         {
             var email = request.Email.Trim().ToLowerInvariant();
 
@@ -148,11 +147,8 @@ namespace QROrdering.Application.Authentication
                 // Login mới => chưa revoke
                 RevokedAt = null
             };
-
-            // Add session
             await _userSessionRepository.AddAsync(session);
 
-            // Commit transaction
             await _unitOfWork.SaveChangesAsync();
 
             var response = new LoginResponse
@@ -164,6 +160,69 @@ namespace QROrdering.Application.Authentication
             };
 
             return (response, refreshToken);
+        }
+
+        public async Task<(RefreshResponse response, string refreshToken)> RefreshTokenAsync(
+        string refreshToken)
+        {
+            // Hash refresh token để tìm session
+            var refreshTokenHash = _hashService.Hash(refreshToken);
+
+            // Tìm session kèm User
+            var session =
+                await _userSessionRepository
+                    .GetByRefreshTokenHashWithUserAsync(refreshTokenHash);
+
+            if (session == null)
+            {
+                throw new UnauthorizedException("Phiên đăng nhập không hợp lệ.");
+            }
+
+            // Kiểm tra session đã bị thu hồi
+            if (session.RevokedAt != null)
+            {
+                throw new UnauthorizedException("Phiên đăng nhập đã bị thu hồi.");
+            }
+
+            // Kiểm tra refresh token hết hạn
+            if (session.ExpiredAt <= DateTime.UtcNow)
+            {
+                throw new UnauthorizedException("Phiên đăng nhập đã hết hạn.");
+            }
+
+            // Kiểm tra tài khoản
+            if (!session.User.IsActive)
+            {
+                throw new UnauthorizedException("Tài khoản đã bị khóa.");
+            }
+
+            // Tạo Access Token mới
+            var accessToken =
+                _jwtService.GenerateAccessToken(
+                    session.User,
+                    session.Id);
+
+            // Rotate Refresh Token
+            var newRefreshToken =_jwtService.GenerateRefreshToken();
+
+            session.RefreshTokenHash = _hashService.Hash(newRefreshToken);
+
+            // Cập nhật thời gian truy cập
+            session.LastAccessAt = DateTime.UtcNow;
+
+            // Gia hạn refresh token
+            session.ExpiredAt =
+                _jwtService.GetRefreshTokenExpiration();
+
+            await _unitOfWork.SaveChangesAsync();
+
+            return (
+                new RefreshResponse
+                {
+                    AccessToken = accessToken
+                },
+                newRefreshToken
+            );
         }
     }
 }

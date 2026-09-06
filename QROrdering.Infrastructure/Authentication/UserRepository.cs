@@ -37,5 +37,16 @@ namespace QROrdering.Infrastructure.Authentication
             return await _context.Users
                 .FirstOrDefaultAsync(x => x.Email == email);
         }
+
+        public async Task<bool> ExistsByUsernameOrEmailAsync(
+        string username,
+        string email)
+        {
+            return await _context.Users
+                .AsNoTracking()
+                .AnyAsync(x =>
+                    x.Username == username ||
+                    x.Email == email);
+        }
     }
 }

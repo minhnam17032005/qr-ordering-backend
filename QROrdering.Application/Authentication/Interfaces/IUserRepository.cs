@@ -11,5 +11,7 @@ namespace QROrdering.Application.Authentication.Interfaces
         Task AddAsync(User user);
 
         Task<User?> GetByEmailAsync(string email);
+
+        Task<bool> ExistsByUsernameOrEmailAsync(string username,string email);
     }
 }

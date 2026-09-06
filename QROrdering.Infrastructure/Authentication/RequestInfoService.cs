@@ -6,6 +6,7 @@ namespace QROrdering.Infrastructure.Authentication
 {
     public class RequestInfoService : IRequestInfoService
     {
+        // Truy cập thông tin HTTP request hiện tại
         private readonly IHttpContextAccessor _httpContextAccessor;
 
         public RequestInfoService(
@@ -14,6 +15,7 @@ namespace QROrdering.Infrastructure.Authentication
             _httpContextAccessor = httpContextAccessor;
         }
 
+        // Lấy địa chỉ IP của client
         public string IpAddress =>
             _httpContextAccessor.HttpContext?
                 .Connection
@@ -21,6 +23,7 @@ namespace QROrdering.Infrastructure.Authentication
                 .ToString()
             ?? string.Empty;
 
+        // Lấy User-Agent của client
         public string UserAgent =>
             _httpContextAccessor.HttpContext?
                 .Request
@@ -28,6 +31,7 @@ namespace QROrdering.Infrastructure.Authentication
                 .ToString()
             ?? string.Empty;
 
+        // Phân tích hệ điều hành và trình duyệt
         public string DeviceName
         {
             get

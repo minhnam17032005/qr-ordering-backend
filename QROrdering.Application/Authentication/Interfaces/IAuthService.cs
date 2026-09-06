@@ -8,5 +8,8 @@ namespace QROrdering.Application.Authentication.Interfaces
 
         Task<(LoginResponse response, string refreshToken)> LoginAsync(
         LoginRequest request);
+
+        Task<(RefreshResponse response, string refreshToken)> RefreshTokenAsync(
+        string refreshToken);
     }
 }

@@ -6,6 +6,7 @@ namespace QROrdering.Infrastructure.Authentication
 {
     public class HashService : IHashService
     {
+        // Hash dữ liệu bằng SHA-256
         public string Hash(string value)
         {
             using var sha256 = SHA256.Create();
@@ -16,6 +17,7 @@ namespace QROrdering.Infrastructure.Authentication
             return Convert.ToHexString(hash);
         }
 
+        // So sánh dữ liệu với hash đã lưu
         public bool Verify(string value, string hashedValue)
         {
             var hash = Hash(value);

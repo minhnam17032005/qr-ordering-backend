@@ -5,6 +5,7 @@ namespace QROrdering.API.Extensions
 {
     public static class ControllerExtensions
     {
+        // Tạo response thành công 200 OK
         public static ActionResult<ApiResponse<T>> ApiOk<T>(
             this ControllerBase controller,
             T data,
@@ -20,6 +21,7 @@ namespace QROrdering.API.Extensions
                 });
         }
 
+        // Tạo response thành công 201 Created
         public static ActionResult<ApiResponse<T>> ApiCreated<T>(
             this ControllerBase controller,
             T data,
