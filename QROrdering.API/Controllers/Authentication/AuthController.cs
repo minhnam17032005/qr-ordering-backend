@@ -11,7 +11,7 @@ using QROrdering.Infrastructure.Configurations;
 namespace QROrdering.API.Controllers.Authentication
 {
     [ApiController]
-    [Route("api/auth")]
+    [Route("api/account")]
     public class AuthController : ControllerBase
     {
         private readonly IAuthService _authService;
@@ -117,6 +117,22 @@ namespace QROrdering.API.Controllers.Authentication
             return this.ApiOk(
                 response,
                 "Làm mới token thành công.");
+        }
+
+        [HttpGet("me")]
+        [ProducesResponseType(
+            typeof(ApiResponse<UserProfileResponse>),
+            StatusCodes.Status200OK)]
+        [ProducesResponseType(
+            typeof(ErrorResponse),
+            StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<ApiResponse<UserProfileResponse>>> GetProfile()
+        {
+            var result = await _authService.GetProfileAsync();
+
+            return this.ApiOk(
+                result,
+                "Lấy thông tin cá nhân thành công.");
         }
     }
 }

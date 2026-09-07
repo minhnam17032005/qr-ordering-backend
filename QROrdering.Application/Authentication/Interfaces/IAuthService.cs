@@ -11,5 +11,7 @@ namespace QROrdering.Application.Authentication.Interfaces
 
         Task<(RefreshResponse response, string refreshToken)> RefreshTokenAsync(
         string refreshToken);
+
+        Task<UserProfileResponse> GetProfileAsync();
     }
 }

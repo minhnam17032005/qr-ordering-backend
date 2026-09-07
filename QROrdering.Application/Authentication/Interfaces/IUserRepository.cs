@@ -16,5 +16,7 @@ namespace QROrdering.Application.Authentication.Interfaces
             string username,
             string email,
             string? phoneNumber);
+
+        Task<User?> GetByIdAsync(Guid userId);
     }
 }

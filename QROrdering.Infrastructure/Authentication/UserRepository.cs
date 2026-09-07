@@ -54,5 +54,12 @@ namespace QROrdering.Infrastructure.Authentication
                 (phoneNumber != null &&
                  x.PhoneNumber == phoneNumber));
         }
+
+        public async Task<User?> GetByIdAsync(Guid userId)
+        {
+            return await _context.Users
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x => x.Id == userId);
+        }
     }
 }

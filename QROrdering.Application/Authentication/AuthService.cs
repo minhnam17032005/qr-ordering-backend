@@ -15,6 +15,7 @@ namespace QROrdering.Application.Authentication
         private readonly IUnitOfWork _unitOfWork;
         private readonly IRequestInfoService _requestInfoService;
         private readonly IHashService _hashService;
+        private readonly ICurrentUserService _currentUser;
 
         public AuthService(
             IUserRepository userRepository,
@@ -23,7 +24,8 @@ namespace QROrdering.Application.Authentication
             IUserSessionRepository userSessionRepository,
             IRequestInfoService requestInfoService,
             IUnitOfWork unitOfWork,
-            IHashService hashService)
+            IHashService hashService, 
+            ICurrentUserService currentUser)
         {
             _userRepository = userRepository;
             _passwordService = passwordService;
@@ -32,6 +34,7 @@ namespace QROrdering.Application.Authentication
             _unitOfWork = unitOfWork;
             _requestInfoService = requestInfoService;
             _hashService = hashService;
+            _currentUser = currentUser;
         }
 
         public async Task<RegisterResponse> RegisterAsync(
@@ -88,7 +91,7 @@ namespace QROrdering.Application.Authentication
             var user =
                 await _userRepository.GetByIdentifierAsync(identifier);
 
-            if (user == null || !_passwordService.Verify(request.Password,user.PasswordHash))
+            if (user == null || !_passwordService.Verify(request.Password, user.PasswordHash))
             {
                 throw new UnauthorizedException(
                     "Identifier hoặc password không hợp lệ.");
@@ -119,7 +122,7 @@ namespace QROrdering.Application.Authentication
                 UserId = user.Id,
 
                 // Lưu hash của refresh token
-                RefreshTokenHash =_hashService.Hash(refreshToken),
+                RefreshTokenHash = _hashService.Hash(refreshToken),
 
                 // Thông tin request
                 DeviceName =
@@ -197,7 +200,7 @@ namespace QROrdering.Application.Authentication
                     session.Id);
 
             // Rotate Refresh Token
-            var newRefreshToken =_jwtService.GenerateRefreshToken();
+            var newRefreshToken = _jwtService.GenerateRefreshToken();
 
             session.RefreshTokenHash = _hashService.Hash(newRefreshToken);
 
@@ -217,6 +220,39 @@ namespace QROrdering.Application.Authentication
                 },
                 newRefreshToken
             );
+        }
+
+
+        public async Task<UserProfileResponse> GetProfileAsync()
+        {
+            var userId = _currentUser.UserId;
+
+            if (userId == Guid.Empty ||
+                !_currentUser.IsAuthenticated)
+            {
+                throw new UnauthorizedException(
+                    "Phiên đăng nhập không hợp lệ.");
+            }
+
+            var user = await _userRepository.GetByIdAsync(userId);
+
+            if (user == null || !user.IsActive)
+            {
+                throw new UnauthorizedException(
+                    "Phiên đăng nhập không hợp lệ hoặc tài khoản đã bị khóa.");
+            }
+
+            return new UserProfileResponse
+            {
+                Id = user.Id,
+                Username = user.Username,
+                FullName = user.FullName,
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber,
+                AvatarUrl = user.AvatarUrl,
+                CreatedAt = user.CreatedAt,
+                UpdatedAt = user.UpdatedAt ?? user.CreatedAt
+            };
         }
     }
 }
