@@ -39,19 +39,15 @@ namespace QROrdering.Application.Authentication
         {
             // 1. Normalize input
             var fullName = request.FullName.Trim();
-            var username = request.Username.Trim();
+            var username = request.Username.Trim().ToLowerInvariant();
             var email = request.Email.Trim().ToLowerInvariant();
+            var phoneNumber = request.PhoneNumber?.Trim();
 
             var exists =
-            await _userRepository.ExistsByUsernameOrEmailAsync(
-                username,
-                email);
-
-            if (exists)
-            {
-                throw new ConflictException(
-                    "Username or email already exists.");
-            }
+                await _userRepository.ExistsByUsernameOrEmailOrPhoneAsync(
+                    username,
+                    email,
+                    phoneNumber);
 
             // 5. Hash password
             var passwordHash = _passwordService.Hash(request.Password);
@@ -62,6 +58,7 @@ namespace QROrdering.Application.Authentication
                 FullName = fullName,
                 Username = username,
                 Email = email,
+                PhoneNumber = phoneNumber,
                 PasswordHash = passwordHash,
                 IsActive = true
             };
@@ -78,28 +75,25 @@ namespace QROrdering.Application.Authentication
                 UserId = user.Id,
                 FullName = user.FullName,
                 Username = user.Username,
-                Email = user.Email
+                Email = user.Email,
+                PhoneNumber = user.PhoneNumber
             };
         }
 
         public async Task<(LoginResponse response, string refreshToken)> LoginAsync(
         LoginRequest request)
         {
-            var email = request.Email.Trim().ToLowerInvariant();
+            var identifier = request.Identifier.Trim().ToLowerInvariant();
 
-            // Kiểm tra email + password
-            var user = await _userRepository.GetByEmailAsync(email);
+            var user =
+                await _userRepository.GetByIdentifierAsync(identifier);
 
-            if (user == null ||
-                !_passwordService.Verify(
-                    request.Password,
-                    user.PasswordHash))
+            if (user == null || !_passwordService.Verify(request.Password,user.PasswordHash))
             {
                 throw new UnauthorizedException(
-                    "Email hoặc password không hợp lệ.");
+                    "Identifier hoặc password không hợp lệ.");
             }
 
-            // Kiểm tra tài khoản
             if (!user.IsActive)
             {
                 throw new UnauthorizedException(

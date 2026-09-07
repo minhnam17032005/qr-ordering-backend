@@ -32,21 +32,27 @@ namespace QROrdering.Infrastructure.Authentication
             await _context.SaveChangesAsync();
         }
 
-        public async Task<User?> GetByEmailAsync(string email)
-        {
-            return await _context.Users
-                .FirstOrDefaultAsync(x => x.Email == email);
-        }
-
-        public async Task<bool> ExistsByUsernameOrEmailAsync(
-        string username,
-        string email)
+        public async Task<User?> GetByIdentifierAsync(
+        string identifier)
         {
             return await _context.Users
                 .AsNoTracking()
-                .AnyAsync(x =>
-                    x.Username == username ||
-                    x.Email == email);
+                .FirstOrDefaultAsync(x =>
+                    x.Email == identifier ||
+                    x.Username == identifier ||
+                    x.PhoneNumber == identifier);
+        }
+
+        public async Task<bool> ExistsByUsernameOrEmailOrPhoneAsync(
+        string username,
+        string email,
+        string? phoneNumber)
+        {
+            return await _context.Users.AnyAsync(x =>
+                x.Username == username ||
+                x.Email == email ||
+                (phoneNumber != null &&
+                 x.PhoneNumber == phoneNumber));
         }
     }
 }

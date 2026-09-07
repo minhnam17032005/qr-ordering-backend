@@ -64,6 +64,10 @@ namespace QROrdering.Infrastructure.Persistence.Configurations
             builder.HasIndex(x => x.Email)
                 .IsUnique();
 
+            builder.HasIndex(x => x.PhoneNumber)
+                .IsUnique()
+                .HasFilter("[PhoneNumber] IS NOT NULL");
+
 
             // ============================================================
             // RELATIONSHIPS

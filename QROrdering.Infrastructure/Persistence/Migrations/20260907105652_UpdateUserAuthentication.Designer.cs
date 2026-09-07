@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using QROrdering.Infrastructure.Persistence;
 
@@ -11,9 +12,11 @@ using QROrdering.Infrastructure.Persistence;
 namespace QROrdering.Infrastructure.Migrations
 {
     [DbContext(typeof(QROrderingDbContext))]
-    partial class QROrderingDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260907105652_UpdateUserAuthentication")]
+    partial class UpdateUserAuthentication
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
