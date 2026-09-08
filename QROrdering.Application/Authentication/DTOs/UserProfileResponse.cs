@@ -14,6 +14,8 @@ namespace QROrdering.Application.Authentication.DTOs
         public string Email { get; set; } = null!;
         public string? PhoneNumber { get; set; }
         public string? AvatarUrl { get; set; }
+        public List<RestaurantMembershipResponse> Restaurants { get; set; }
+        = new();
         public DateTime CreatedAt { get; set; }
         public DateTime UpdatedAt { get; set; }
     }

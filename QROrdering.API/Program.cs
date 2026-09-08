@@ -3,6 +3,7 @@ using System.Text;
 
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -13,6 +14,8 @@ using QROrdering.Application.Common.Interfaces;
 using QROrdering.Infrastructure.Authentication;
 using QROrdering.Infrastructure.Configurations;
 using QROrdering.Infrastructure.Persistence;
+using QROrdering.Infrastructure.Redis;
+using StackExchange.Redis;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -22,6 +25,9 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.Configure<JwtSettings>(
     builder.Configuration.GetSection("Jwt"));
+
+builder.Services.Configure<CacheSettings>(
+    builder.Configuration.GetSection("CacheSettings"));
 
 var jwtSettings = builder.Configuration
     .GetSection("Jwt")
@@ -37,6 +43,17 @@ builder.Services.AddDbContext<QROrderingDbContext>(options =>
     options.UseSqlServer(
         builder.Configuration.GetConnectionString("DefaultConnection")));
 
+// Redis
+builder.Services.AddSingleton<IConnectionMultiplexer>(
+    ConnectionMultiplexer.Connect(
+        builder.Configuration["Redis:ConnectionString"]
+        ?? throw new Exception("Redis configuration is missing.")
+    ));
+
+builder.Services.AddMemoryCache();
+
+builder.Services.AddSingleton<RedisService>();
+
 
 // =========================
 // Authentication Services
@@ -49,6 +66,10 @@ builder.Services.AddScoped<IUserSessionRepository, UserSessionRepository>();
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IHashService, HashService>();
+builder.Services.AddScoped<IJwtBlacklistService, JwtBlacklistService>();
+builder.Services.AddScoped<ISessionCacheService, SessionCacheService>();
+
+builder.Services.AddScoped<JwtAuthEvents>();
 
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
@@ -71,33 +92,37 @@ builder.Services.AddScoped<
 // =========================
 // JWT Authentication
 // =========================
-
 builder.Services
     .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            ValidateIssuerSigningKey = true,
+        options.TokenValidationParameters =
+            new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                ValidateIssuerSigningKey = true,
 
-            ValidIssuer = jwtSettings.Issuer,
-            ValidAudience = jwtSettings.Audience,
+                ValidIssuer = jwtSettings.Issuer,
+                ValidAudience = jwtSettings.Audience,
 
-            IssuerSigningKey = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(jwtSettings.Key)
-            ),
+                IssuerSigningKey =
+                    new SymmetricSecurityKey(
+                        Encoding.UTF8.GetBytes(
+                            jwtSettings.Key)),
 
-            RoleClaimType = ClaimTypes.Role,
-            NameClaimType = "username"
-        };
+                RoleClaimType = ClaimTypes.Role,
+                NameClaimType = "username"
+            };
 
-        // Giữ nguyên tên claim custom như userId, sid, user_type...
+        // Giữ nguyên custom claims:
+        // userId, username, sid, user_type...
         options.MapInboundClaims = false;
-    });
 
+        // JwtAuthEvents được resolve bởi DI
+        options.EventsType = typeof(JwtAuthEvents);
+    });
 
 // =========================
 // Authorization
@@ -205,24 +230,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-
-// =========================
-// Authentication
-// =========================
-
 app.UseAuthentication();
 
-
-// =========================
-// Authorization
-// =========================
+app.UseMiddleware<SessionValidationMiddleware>();
 
 app.UseAuthorization();
-
-
-// =========================
-// Controllers
-// =========================
 
 app.MapControllers();
 

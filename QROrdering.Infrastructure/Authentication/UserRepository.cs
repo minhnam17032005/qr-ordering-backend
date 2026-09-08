@@ -61,5 +61,16 @@ namespace QROrdering.Infrastructure.Authentication
                 .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == userId);
         }
+
+        public async Task<User?> GetByIdWithRestaurantMembershipsAsync(Guid userId)
+        {
+            return await _context.Users
+                .Include(x => x.RestaurantMembers)
+                    .ThenInclude(x => x.Restaurant)
+                .Include(x => x.RestaurantMembers)
+                    .ThenInclude(x => x.MemberRoles)
+                        .ThenInclude(x => x.Role)
+                .FirstOrDefaultAsync(x => x.Id == userId);
+        }
     }
 }

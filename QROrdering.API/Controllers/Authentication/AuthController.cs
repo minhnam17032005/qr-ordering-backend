@@ -1,9 +1,11 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using QROrdering.API.Common;
 using QROrdering.API.Extensions;
 using QROrdering.Application.Authentication.DTOs;
 using QROrdering.Application.Authentication.Interfaces;
+using QROrdering.Application.Common.Responses;
 using QROrdering.Application.Exceptions;
 using QROrdering.Infrastructure.Authentication;
 using QROrdering.Infrastructure.Configurations;
@@ -30,12 +32,8 @@ namespace QROrdering.API.Controllers.Authentication
         }
 
         [HttpPost("register")]
-        [ProducesResponseType(
-            typeof(ApiResponse<RegisterResponse>),
-            StatusCodes.Status201Created)]
-        [ProducesResponseType(
-            typeof(ErrorResponse),
-            StatusCodes.Status409Conflict)]
+        [ProducesResponseType(typeof(ApiResponse<RegisterResponse>), StatusCodes.Status201Created)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status409Conflict)]
         public async Task<ActionResult<ApiResponse<RegisterResponse>>> Register(
            RegisterRequest request)
         {
@@ -47,12 +45,8 @@ namespace QROrdering.API.Controllers.Authentication
         }
 
         [HttpPost("login")]
-        [ProducesResponseType(
-            typeof(ApiResponse<LoginResponse>),
-            StatusCodes.Status200OK)]
-        [ProducesResponseType(
-            typeof(ErrorResponse),
-            StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<LoginResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<ApiResponse<LoginResponse>>> Login(
             LoginRequest request)
         {
@@ -78,12 +72,8 @@ namespace QROrdering.API.Controllers.Authentication
         }
 
         [HttpPost("refresh")]
-        [ProducesResponseType(
-            typeof(ApiResponse<RefreshResponse>),
-            StatusCodes.Status200OK)]
-        [ProducesResponseType(
-            typeof(ErrorResponse),
-            StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<RefreshResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<ApiResponse<RefreshResponse>>> Refresh()
         {
             // Lấy refresh token từ cookie
@@ -119,13 +109,10 @@ namespace QROrdering.API.Controllers.Authentication
                 "Làm mới token thành công.");
         }
 
+        [Authorize]
         [HttpGet("me")]
-        [ProducesResponseType(
-            typeof(ApiResponse<UserProfileResponse>),
-            StatusCodes.Status200OK)]
-        [ProducesResponseType(
-            typeof(ErrorResponse),
-            StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<UserProfileResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<ApiResponse<UserProfileResponse>>> GetProfile()
         {
             var result = await _authService.GetProfileAsync();
@@ -133,6 +120,21 @@ namespace QROrdering.API.Controllers.Authentication
             return this.ApiOk(
                 result,
                 "Lấy thông tin cá nhân thành công.");
+        }
+
+        [Authorize]
+        [HttpPost("logout")]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<ApiResponse<object>>> Logout()
+        {
+            await _authService.LogoutAsync();
+
+            Response.Cookies.Delete("refreshToken");
+
+            return this.ApiOk<object>(
+                null,
+                "Đăng xuất thành công.");
         }
     }
 }

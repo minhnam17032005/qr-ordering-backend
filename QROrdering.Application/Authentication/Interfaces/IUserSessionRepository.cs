@@ -6,5 +6,9 @@
 
         Task<UserSession?> GetByRefreshTokenHashWithUserAsync(
         string refreshTokenHash);
+
+        Task<UserSession?> GetBySessionIdAsync(Guid sessionId);
+
+        Task<UserSession?> GetSessionWithUserAsync(Guid sessionId);
     }
 }

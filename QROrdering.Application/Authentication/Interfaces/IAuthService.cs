@@ -13,5 +13,7 @@ namespace QROrdering.Application.Authentication.Interfaces
         string refreshToken);
 
         Task<UserProfileResponse> GetProfileAsync();
+
+        Task LogoutAsync();
     }
 }

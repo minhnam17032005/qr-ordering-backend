@@ -1,5 +1,6 @@
 ﻿using Microsoft.Data.SqlClient;
 using QROrdering.API.Common;
+using QROrdering.Application.Common.Responses;
 using QROrdering.Application.Exceptions;
 
 namespace QROrdering.API.Middleware

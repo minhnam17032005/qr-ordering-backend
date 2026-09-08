@@ -1,4 +1,5 @@
-﻿using QROrdering.Application.Authentication.DTOs;
+﻿using Microsoft.Extensions.Logging;
+using QROrdering.Application.Authentication.DTOs;
 using QROrdering.Application.Authentication.Interfaces;
 using QROrdering.Application.Common.Interfaces;
 using QROrdering.Application.Exceptions;
@@ -16,6 +17,9 @@ namespace QROrdering.Application.Authentication
         private readonly IRequestInfoService _requestInfoService;
         private readonly IHashService _hashService;
         private readonly ICurrentUserService _currentUser;
+        private readonly IJwtBlacklistService _jwtBlacklistService;
+        private readonly ILogger<AuthService> _logger;
+        private readonly ISessionCacheService _sessionCacheService;
 
         public AuthService(
             IUserRepository userRepository,
@@ -24,8 +28,11 @@ namespace QROrdering.Application.Authentication
             IUserSessionRepository userSessionRepository,
             IRequestInfoService requestInfoService,
             IUnitOfWork unitOfWork,
-            IHashService hashService, 
-            ICurrentUserService currentUser)
+            IHashService hashService,
+            ICurrentUserService currentUser,
+            IJwtBlacklistService jwtBlacklistService,
+            ISessionCacheService sessionCacheService,
+            ILogger<AuthService> logger)
         {
             _userRepository = userRepository;
             _passwordService = passwordService;
@@ -35,6 +42,9 @@ namespace QROrdering.Application.Authentication
             _requestInfoService = requestInfoService;
             _hashService = hashService;
             _currentUser = currentUser;
+            _jwtBlacklistService = jwtBlacklistService;
+            _sessionCacheService = sessionCacheService;
+            _logger = logger;
         }
 
         public async Task<RegisterResponse> RegisterAsync(
@@ -46,11 +56,18 @@ namespace QROrdering.Application.Authentication
             var email = request.Email.Trim().ToLowerInvariant();
             var phoneNumber = request.PhoneNumber?.Trim();
 
+            // Check duplicate identity
             var exists =
                 await _userRepository.ExistsByUsernameOrEmailOrPhoneAsync(
                     username,
                     email,
                     phoneNumber);
+
+            if (exists)
+            {
+                throw new ConflictException(
+                    "Username, email hoặc số điện thoại đã tồn tại.");
+            }
 
             // 5. Hash password
             var passwordHash = _passwordService.Hash(request.Password);
@@ -71,6 +88,10 @@ namespace QROrdering.Application.Authentication
 
             // Commit transaction
             await _unitOfWork.SaveChangesAsync();
+
+            _logger.LogInformation(
+            "User {UserId} registered successfully",
+            user.Id);
 
             // 8. Return response
             return new RegisterResponse
@@ -145,8 +166,17 @@ namespace QROrdering.Application.Authentication
                 RevokedAt = null
             };
             await _userSessionRepository.AddAsync(session);
-
             await _unitOfWork.SaveChangesAsync();
+
+            // Cache session
+            await _sessionCacheService.SetAsync(
+             session,
+             user.IsActive);
+
+            _logger.LogInformation(
+            "User {UserId} logged in successfully. Session {SessionId}",
+            user.Id,
+            session.Id);
 
             var response = new LoginResponse
             {
@@ -208,10 +238,18 @@ namespace QROrdering.Application.Authentication
             session.LastAccessAt = DateTime.UtcNow;
 
             // Gia hạn refresh token
-            session.ExpiredAt =
-                _jwtService.GetRefreshTokenExpiration();
-
+            session.ExpiredAt = _jwtService.GetRefreshTokenExpiration();
             await _unitOfWork.SaveChangesAsync();
+
+            // Update Session Cache
+            await _sessionCacheService.SetAsync(
+                session,
+                session.User.IsActive);
+
+            _logger.LogInformation(
+            "User {UserId} refreshed access token. Session {SessionId}",
+            session.UserId,
+            session.Id);
 
             return (
                 new RefreshResponse
@@ -227,19 +265,13 @@ namespace QROrdering.Application.Authentication
         {
             var userId = _currentUser.UserId;
 
-            if (userId == Guid.Empty ||
-                !_currentUser.IsAuthenticated)
-            {
-                throw new UnauthorizedException(
-                    "Phiên đăng nhập không hợp lệ.");
-            }
+            var user = await _userRepository
+                .GetByIdWithRestaurantMembershipsAsync(userId);
 
-            var user = await _userRepository.GetByIdAsync(userId);
-
-            if (user == null || !user.IsActive)
+            if (user == null)
             {
-                throw new UnauthorizedException(
-                    "Phiên đăng nhập không hợp lệ hoặc tài khoản đã bị khóa.");
+                throw new NotFoundException(
+                    "Người dùng không tồn tại.");
             }
 
             return new UserProfileResponse
@@ -250,9 +282,55 @@ namespace QROrdering.Application.Authentication
                 Email = user.Email,
                 PhoneNumber = user.PhoneNumber,
                 AvatarUrl = user.AvatarUrl,
+
+                Restaurants = user.RestaurantMembers
+                    .Select(member => new RestaurantMembershipResponse
+                    {
+                        RestaurantId = member.RestaurantId,
+                        RestaurantName = member.Restaurant.Name,
+
+                        Roles = member.MemberRoles
+                            .Select(memberRole => new MemberRoleResponse
+                            {
+                                RoleId = memberRole.RoleId,
+                                RoleName = memberRole.Role.Name
+                            })
+                            .ToList()
+                    })
+                    .ToList(),
+
                 CreatedAt = user.CreatedAt,
                 UpdatedAt = user.UpdatedAt ?? user.CreatedAt
             };
+        }
+
+        public async Task LogoutAsync()
+        {
+            var sessionId = _currentUser.SessionId;
+
+            var session = await _userSessionRepository
+                .GetBySessionIdAsync(sessionId);
+
+            if (session == null)
+            {
+                throw new NotFoundException(
+                    "Phiên đăng nhập không tồn tại.");
+            }
+
+            await _jwtBlacklistService.BlacklistTokenAsync(
+                _currentUser.Jti,
+                _currentUser.ExpiredAtString);
+
+            session.RevokedAt = DateTime.UtcNow;
+
+            await _unitOfWork.SaveChangesAsync();
+
+            await _sessionCacheService.RemoveAsync(sessionId);
+
+            _logger.LogInformation(
+                "User {UserId} logged out. Session {SessionId}",
+                _currentUser.UserId,
+                sessionId);
         }
     }
 }

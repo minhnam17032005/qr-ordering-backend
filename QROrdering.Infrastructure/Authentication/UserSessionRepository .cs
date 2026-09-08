@@ -27,5 +27,18 @@ namespace QROrdering.Infrastructure.Authentication
                 .FirstOrDefaultAsync(
                     x => x.RefreshTokenHash == refreshTokenHash);
         }
+
+        public async Task<UserSession?> GetBySessionIdAsync(Guid sessionId)
+        {
+            return await _context.UserSessions
+                .FirstOrDefaultAsync(x => x.Id == sessionId);
+        }
+
+        public async Task<UserSession?> GetSessionWithUserAsync(Guid sessionId)
+        {
+            return await _context.UserSessions
+                .Include(x => x.User)
+                .FirstOrDefaultAsync(x => x.Id == sessionId);
+        }
     }
 }
