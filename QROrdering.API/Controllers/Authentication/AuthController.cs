@@ -1,10 +1,10 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
-using QROrdering.API.Common;
 using QROrdering.API.Extensions;
 using QROrdering.Application.Authentication.DTOs;
 using QROrdering.Application.Authentication.Interfaces;
+using QROrdering.Application.Common.Pagination;
 using QROrdering.Application.Common.Responses;
 using QROrdering.Application.Exceptions;
 using QROrdering.Infrastructure.Authentication;
@@ -135,6 +135,62 @@ namespace QROrdering.API.Controllers.Authentication
             return this.ApiOk<object>(
                 null,
                 "Đăng xuất thành công.");
+        }
+
+        [Authorize]
+        [HttpPost("logout-all-sessions")]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<ApiResponse<object>>> LogoutAllSessions()
+        {
+            await _authService.LogoutAllSessionsAsync();
+
+            Response.Cookies.Delete("refreshToken");
+
+            return this.ApiOk<object>(
+                null,
+                "Đăng xuất khỏi tất cả phiên thành công.");
+        }
+
+        [Authorize]
+        [HttpPost("logout-other-sessions")]
+        [ProducesResponseType(typeof(ApiResponse<object>),StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<ApiResponse<object>>> LogoutOtherSessions()
+        {
+            await _authService.LogoutOtherSessionsAsync();
+
+            return this.ApiOk<object>(
+                null,
+                "Đăng xuất khỏi tất cả phiên khác thành công.");
+        }
+
+        [Authorize]
+        [HttpGet("sessions")]
+        [ProducesResponseType(typeof(ApiResponse<PagedResponse<UserSessionResponse>>),StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<ApiResponse<PagedResponse<UserSessionResponse>>>> GetSessions(
+        [FromQuery] PagedRequest request)
+        {
+            var sessions = await _authService.GetSessionsAsync(request);
+
+            return this.ApiOk(
+                sessions,
+                "Lấy danh sách phiên đăng nhập thành công.");
+        }
+
+        [Authorize]
+        [HttpDelete("sessions/{sessionId:guid}")]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<object>>> DeleteSession(Guid sessionId)
+        {
+            await _authService.DeleteSessionAsync(sessionId);
+
+            return this.ApiOk<object>(
+                null,
+                "Xóa phiên đăng nhập thành công.");
         }
     }
 }

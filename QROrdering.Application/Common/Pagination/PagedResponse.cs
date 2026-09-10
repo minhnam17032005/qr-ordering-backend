@@ -1,4 +1,4 @@
-﻿namespace QROrdering.API.Common
+﻿namespace QROrdering.Application.Common.Pagination
 {
     public class PagedResponse<T>
     {

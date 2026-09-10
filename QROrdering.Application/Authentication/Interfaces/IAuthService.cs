@@ -1,4 +1,5 @@
 ﻿using QROrdering.Application.Authentication.DTOs;
+using QROrdering.Application.Common.Pagination;
 
 namespace QROrdering.Application.Authentication.Interfaces
 {
@@ -15,5 +16,16 @@ namespace QROrdering.Application.Authentication.Interfaces
         Task<UserProfileResponse> GetProfileAsync();
 
         Task LogoutAsync();
+
+        Task LogoutAllSessionsAsync();
+
+        Task LogoutOtherSessionsAsync();
+
+        Task<PagedResponse<UserSessionResponse>> GetSessionsAsync(
+        PagedRequest request);
+
+        /// Revoke a specific session of the current user.
+        Task DeleteSessionAsync(Guid sessionId);
+
     }
 }

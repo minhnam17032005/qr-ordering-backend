@@ -2,6 +2,7 @@
 using QROrdering.Application.Authentication.DTOs;
 using QROrdering.Application.Authentication.Interfaces;
 using QROrdering.Application.Common.Interfaces;
+using QROrdering.Application.Common.Pagination;
 using QROrdering.Application.Exceptions;
 using QROrdering.Domain.Entities.Identity;
 
@@ -69,10 +70,9 @@ namespace QROrdering.Application.Authentication
                     "Username, email hoặc số điện thoại đã tồn tại.");
             }
 
-            // 5. Hash password
+            //Hash password
             var passwordHash = _passwordService.Hash(request.Password);
 
-            // 6. Create User
             var user = new User
             {
                 FullName = fullName,
@@ -83,7 +83,7 @@ namespace QROrdering.Application.Authentication
                 IsActive = true
             };
 
-            // 7. Save User
+            //Save User
             await _userRepository.AddAsync(user);
 
             // Commit transaction
@@ -93,7 +93,7 @@ namespace QROrdering.Application.Authentication
             "User {UserId} registered successfully",
             user.Id);
 
-            // 8. Return response
+            //Return response
             return new RegisterResponse
             {
                 UserId = user.Id,
@@ -331,6 +331,144 @@ namespace QROrdering.Application.Authentication
                 "User {UserId} logged out. Session {SessionId}",
                 _currentUser.UserId,
                 sessionId);
+        }
+
+        public async Task LogoutAllSessionsAsync()
+        {
+            var userId = _currentUser.UserId;
+
+            var sessions = await _userSessionRepository
+                .GetActiveByUserIdAsync(userId);
+
+            // REVOKE ALL SESSIONS
+            var revokedAt = DateTime.UtcNow;
+
+            foreach (var session in sessions)
+            {
+                session.RevokedAt = revokedAt;
+            }
+
+            // BLACKLIST CURRENT ACCESS TOKEN
+            await _jwtBlacklistService.BlacklistTokenAsync(
+                _currentUser.Jti,
+                _currentUser.ExpiredAtString);
+
+            await _unitOfWork.SaveChangesAsync();
+
+            // INVALIDATE SESSION CACHE
+            foreach (var session in sessions)
+            {
+                await _sessionCacheService.RemoveAsync(session.Id);
+            }
+
+            _logger.LogInformation(
+                "User {UserId} logged out from all sessions.",
+                userId);
+        }
+
+        public async Task LogoutOtherSessionsAsync()
+        {
+            var userId = _currentUser.UserId;
+            var currentSessionId = _currentUser.SessionId;
+
+            var sessions = await _userSessionRepository
+                .GetActiveByUserIdAsync(userId);
+
+            // REVOKE ALL OTHER SESSIONS
+            var revokedAt = DateTime.UtcNow;
+
+            var otherSessions = sessions
+                .Where(session => session.Id != currentSessionId)
+                .ToList();
+
+            foreach (var session in otherSessions)
+            {
+                session.RevokedAt = revokedAt;
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+
+            // INVALIDATE OTHER SESSION CACHES
+            foreach (var session in otherSessions)
+            {
+                await _sessionCacheService.RemoveAsync(session.Id);
+            }
+
+            _logger.LogInformation(
+                "User {UserId} logged out from all other sessions. Current session {SessionId} kept active.",
+                userId,
+                currentSessionId);
+        }
+        public async Task<PagedResponse<UserSessionResponse>> GetSessionsAsync(
+        PagedRequest request)
+        {
+            var userId = _currentUser.UserId;
+            var currentSessionId = _currentUser.SessionId;
+
+            var totalItems = await _userSessionRepository
+                .CountByUserIdAsync(userId);
+
+            var sessions = await _userSessionRepository
+                .GetPagedByUserIdAsync(
+                    userId,
+                    request.Page,
+                    request.PageSize);
+
+            var items = sessions
+                .Select(session => new UserSessionResponse
+                {
+                    SessionId = session.Id,
+                    DeviceName = session.DeviceName,
+                    IpAddress = session.IpAddress,
+                    UserAgent = session.UserAgent,
+                    CreatedAt = session.CreatedAt,
+                    LastAccessAt = session.LastAccessAt,
+                    ExpiredAt = session.ExpiredAt,
+                    IsCurrent = session.Id == currentSessionId
+                })
+                .ToList();
+
+            return new PagedResponse<UserSessionResponse>
+            {
+                Items = items,
+                Pagination = new PaginationMeta
+                {
+                    Page = request.Page,
+                    PageSize = request.PageSize,
+                    TotalItems = totalItems,
+                    TotalPages = (int)Math.Ceiling(
+                        totalItems / (double)request.PageSize)
+                }
+            };
+        }
+
+        public async Task DeleteSessionAsync(Guid sessionId)
+        {
+            var userId = _currentUser.UserId;
+
+            var session = await _userSessionRepository
+                .GetByIdAsync(sessionId);
+
+            if (session == null)
+            {
+                throw new NotFoundException(
+                    "Session không tồn tại.");
+            }
+
+            // OWNERSHIP CHECK
+            if (session.UserId != userId)
+            {
+                throw new NotFoundException(
+                    "Session không tồn tại.");
+            }
+
+            // REVOKE SESSION
+            session.RevokedAt = DateTime.UtcNow;
+
+            await _unitOfWork.SaveChangesAsync();
+
+            // INVALIDATE SESSION CACHE
+            await _sessionCacheService.RemoveAsync(session.Id);
         }
     }
 }

@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using QROrdering.API.Common;
+using QROrdering.Application.Common.Responses;
 
 namespace QROrdering.API.Extensions
 {

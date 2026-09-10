@@ -1,4 +1,4 @@
-﻿namespace QROrdering.API.Common
+﻿namespace QROrdering.Application.Common.Responses
 {
     public class ApiResponse<T>
     {

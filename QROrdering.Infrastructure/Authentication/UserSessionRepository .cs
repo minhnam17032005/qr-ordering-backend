@@ -40,5 +40,51 @@ namespace QROrdering.Infrastructure.Authentication
                 .Include(x => x.User)
                 .FirstOrDefaultAsync(x => x.Id == sessionId);
         }
+
+        public async Task<List<UserSession>> GetActiveByUserIdAsync(Guid userId)
+        {
+            return await _context.UserSessions
+                .Where(x =>
+                    x.UserId == userId &&
+                    x.RevokedAt == null)
+                .ToListAsync();
+        }
+
+        public async Task<List<UserSession>> GetByUserIdAsync(Guid userId)
+        {
+            return await _context.UserSessions
+                .AsNoTracking()
+                .Where(x =>
+                    x.UserId == userId &&
+                    x.RevokedAt == null)
+                .OrderByDescending(x => x.CreatedAt)
+                .ToListAsync();
+        }
+
+        public async Task<UserSession?> GetByIdAsync(Guid sessionId)
+        {
+            return await _context.UserSessions
+                .FirstOrDefaultAsync(x => x.Id == sessionId);
+        }
+
+        public async Task<int> CountByUserIdAsync(Guid userId)
+        {
+            return await _context.UserSessions
+                .CountAsync(x => x.UserId == userId);
+        }
+
+        public async Task<List<UserSession>> GetPagedByUserIdAsync(
+        Guid userId,
+        int page,
+        int pageSize)
+        {
+            return await _context.UserSessions
+                .AsNoTracking()
+                .Where(x => x.UserId == userId)
+                .OrderByDescending(x => x.CreatedAt)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+        }
     }
 }
