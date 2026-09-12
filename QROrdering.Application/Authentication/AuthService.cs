@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
 using QROrdering.Application.Authentication.DTOs;
+using QROrdering.Application.Authentication.DTOs.Requests;
+using QROrdering.Application.Authentication.DTOs.Responses;
 using QROrdering.Application.Authentication.Interfaces;
 using QROrdering.Application.Common.Interfaces;
 using QROrdering.Application.Common.Pagination;
@@ -21,6 +23,7 @@ namespace QROrdering.Application.Authentication
         private readonly IJwtBlacklistService _jwtBlacklistService;
         private readonly ILogger<AuthService> _logger;
         private readonly ISessionCacheService _sessionCacheService;
+        private readonly IOtpService _otpService;
 
         public AuthService(
             IUserRepository userRepository,
@@ -33,7 +36,8 @@ namespace QROrdering.Application.Authentication
             ICurrentUserService currentUser,
             IJwtBlacklistService jwtBlacklistService,
             ISessionCacheService sessionCacheService,
-            ILogger<AuthService> logger)
+            ILogger<AuthService> logger,
+            IOtpService otpService)
         {
             _userRepository = userRepository;
             _passwordService = passwordService;
@@ -46,6 +50,7 @@ namespace QROrdering.Application.Authentication
             _jwtBlacklistService = jwtBlacklistService;
             _sessionCacheService = sessionCacheService;
             _logger = logger;
+            _otpService = otpService;
         }
 
         public async Task<RegisterResponse> RegisterAsync(
@@ -469,6 +474,170 @@ namespace QROrdering.Application.Authentication
 
             // INVALIDATE SESSION CACHE
             await _sessionCacheService.RemoveAsync(session.Id);
+        }
+
+        public async Task SendChangePasswordOtpAsync()
+        {
+            var user = await _userRepository.GetByIdAsync(
+                _currentUser.UserId);
+
+            if (user == null)
+                throw new NotFoundException(
+                    "Không tìm thấy người dùng.");
+
+            await _otpService.SendChangePasswordOtpAsync(user);
+        }
+        public async Task<VerifyOtpResponse> VerifyChangePasswordOtpAsync(
+        VerifyChangePasswordOtpRequest request)
+        {
+            var user = await _userRepository.GetByIdAsync(
+                _currentUser.UserId);
+
+            if (user == null)
+                throw new NotFoundException(
+                    "Không tìm thấy người dùng.");
+
+            return await _otpService.VerifyChangePasswordOtpAsync(
+                user,
+                request.Otp);
+        }
+
+        public async Task ChangePasswordAsync(
+        ChangePasswordRequest request)
+        {
+            if (request.NewPassword != request.ConfirmPassword)
+                throw new BadRequestException(
+                    "Mật khẩu xác nhận không trùng với mật khẩu mới.");
+
+            var user = await _userRepository.GetByIdAsync(
+                _currentUser.UserId);
+
+            if (user == null)
+                throw new NotFoundException(
+                    "Không tìm thấy người dùng.");
+
+            if (!_passwordService.Verify(
+                    request.CurrentPassword,
+                    user.PasswordHash))
+            {
+                throw new BadRequestException(
+                    "Mật khẩu hiện tại không đúng.");
+            }
+
+            if (_passwordService.Verify(
+                    request.NewPassword,
+                    user.PasswordHash))
+            {
+                throw new BadRequestException(
+                    "Mật khẩu mới phải khác mật khẩu hiện tại.");
+            }
+
+            await _otpService.ValidateChangePasswordVerificationAsync(
+                user,
+                request.VerificationToken);
+
+            var sessions = await _userSessionRepository
+                .GetActiveByUserIdAsync(user.Id);
+
+            user.PasswordHash = _passwordService.Hash(
+                request.NewPassword);
+
+            user.UpdatedAt = DateTime.UtcNow;
+
+            foreach (var session in sessions)
+            {
+                session.RevokedAt = DateTime.UtcNow;
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+
+            foreach (var session in sessions)
+            {
+                await _sessionCacheService.RemoveAsync(
+                    session.Id);
+            }
+
+            await _jwtBlacklistService.BlacklistTokenAsync(
+                _currentUser.Jti,
+                _currentUser.ExpiredAtString);
+        }
+
+        public async Task SendForgotPasswordOtpAsync(
+        ForgotPasswordOtpRequest request)
+        {
+            var email = request.Email
+                .Trim()
+                .ToLowerInvariant();
+
+            var user = await _userRepository.GetByEmailAsync(
+                email);
+
+            if (user == null)
+                throw new NotFoundException(
+                    "Không tìm thấy người dùng.");
+
+            await _otpService.SendForgotPasswordOtpAsync(user);
+        }
+
+        public async Task<VerifyOtpResponse> VerifyForgotPasswordOtpAsync(
+        VerifyForgotPasswordOtpRequest request)
+        {
+            var email = request.Email
+                .Trim()
+                .ToLowerInvariant();
+
+            var user = await _userRepository.GetByEmailAsync(
+                email);
+
+            if (user == null)
+                throw new NotFoundException(
+                    "Không tìm thấy người dùng.");
+
+            return await _otpService.VerifyForgotPasswordOtpAsync(
+                user,
+                request.Otp);
+        }
+
+        public async Task ForgotPasswordAsync(ForgotPasswordRequest request)
+        {
+            if (request.NewPassword != request.ConfirmPassword)
+                throw new BadRequestException(
+                    "Mật khẩu xác nhận không trùng với mật khẩu mới.");
+
+            var user =
+                await _otpService.ValidateForgotPasswordVerificationAsync(
+                    request.VerificationToken);
+
+            if (_passwordService.Verify(
+                    request.NewPassword,
+                    user.PasswordHash))
+            {
+                throw new BadRequestException(
+                    "Mật khẩu mới phải khác mật khẩu hiện tại.");
+            }
+
+            var sessions = await _userSessionRepository
+                .GetActiveByUserIdAsync(user.Id);
+
+            var revokedAt = DateTime.UtcNow;
+
+            user.PasswordHash = _passwordService.Hash(
+                request.NewPassword);
+
+            user.UpdatedAt = revokedAt;
+
+            foreach (var session in sessions)
+            {
+                session.RevokedAt = revokedAt;
+            }
+
+            await _unitOfWork.SaveChangesAsync();
+
+            foreach (var session in sessions)
+            {
+                await _sessionCacheService.RemoveAsync(
+                    session.Id);
+            }
         }
     }
 }

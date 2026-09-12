@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace QROrdering.Application.Authentication.DTOs
+namespace QROrdering.Application.Authentication.DTOs.Responses
 {
     public class MemberRoleResponse
     {

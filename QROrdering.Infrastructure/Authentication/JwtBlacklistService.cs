@@ -4,15 +4,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using QROrdering.Application.Authentication.Interfaces;
+using QROrdering.Application.Common.Interfaces;
 using QROrdering.Infrastructure.Redis;
 
 namespace QROrdering.Infrastructure.Authentication
 {
     public class JwtBlacklistService : IJwtBlacklistService
     {
-        private readonly RedisService _redisService;
+        private readonly IRedisService _redisService;
 
-        public JwtBlacklistService(RedisService redisService)
+        public JwtBlacklistService(
+        IRedisService redisService)
         {
             _redisService = redisService;
         }

@@ -3,6 +3,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using QROrdering.API.Extensions;
 using QROrdering.Application.Authentication.DTOs;
+using QROrdering.Application.Authentication.DTOs.Requests;
+using QROrdering.Application.Authentication.DTOs.Responses;
 using QROrdering.Application.Authentication.Interfaces;
 using QROrdering.Application.Common.Pagination;
 using QROrdering.Application.Common.Responses;
@@ -192,5 +194,104 @@ namespace QROrdering.API.Controllers.Authentication
                 null,
                 "Xóa phiên đăng nhập thành công.");
         }
+
+        //=== Change Password ===//
+
+        [Authorize]
+        [HttpPost("change-password/send-otp")]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<object>>> SendChangePasswordOtp()
+        {
+            await _authService.SendChangePasswordOtpAsync();
+
+            return this.ApiOk<object>(
+                null,
+                "Nếu email tồn tại, OTP đã được gửi.");
+        }
+
+        [Authorize]
+        [HttpPost("change-password/verify-otp")]
+        [ProducesResponseType(typeof(ApiResponse<VerifyOtpResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<VerifyOtpResponse>>> VerifyChangePasswordOtp(
+            [FromBody] VerifyChangePasswordOtpRequest request)
+        {
+            var response = await _authService.VerifyChangePasswordOtpAsync(
+                request);
+
+            return this.ApiOk(
+                response,
+                "Xác thực OTP thành công.");
+        }
+
+        [Authorize]
+        [HttpPost("change-password/change")]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<object>>> ChangePassword(
+            [FromBody] ChangePasswordRequest request)
+        {
+            await _authService.ChangePasswordAsync(request);
+
+            return this.ApiOk<object>(
+                null,
+                "Mật khẩu thay đổi thành công.");
+        }
+
+        //=== Forgot Password ===//
+
+        [AllowAnonymous]
+        [HttpPost("forgot-password/send-otp")]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<object>>> SendForgotPasswordOtp(
+            [FromBody] ForgotPasswordOtpRequest request)
+        {
+            await _authService.SendForgotPasswordOtpAsync(request);
+
+            return this.ApiOk<object>(
+                null,
+                "Nếu email tồn tại, OTP đã được gửi.");
+        }
+
+        [AllowAnonymous]
+        [HttpPost("forgot-password/verify-otp")]
+        [ProducesResponseType(typeof(ApiResponse<VerifyOtpResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<VerifyOtpResponse>>> VerifyForgotPasswordOtp(
+            [FromBody] VerifyForgotPasswordOtpRequest request)
+        {
+            var response = await _authService.VerifyForgotPasswordOtpAsync(
+                request);
+
+            return this.ApiOk(
+                response,
+                "Xác thực OTP thành công.");
+        }
+
+        [AllowAnonymous]
+        [HttpPost("forgot-password/reset")]
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<object>>> ResetForgotPassword(
+            [FromBody] ForgotPasswordRequest request)
+        {
+            await _authService.ForgotPasswordAsync(request);
+
+            return this.ApiOk<object>(
+                null,
+                "Đặt lại mật khẩu thành công.");
+        }
+
+
     }
 }

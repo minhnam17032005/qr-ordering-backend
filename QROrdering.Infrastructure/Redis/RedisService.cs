@@ -1,74 +1,139 @@
-﻿using System;
-using System.Text.Json;
-using System.Threading.Tasks;
+﻿using QROrdering.Application.Common.Interfaces;
 using StackExchange.Redis;
+using System.Text.Json;
 
 namespace QROrdering.Infrastructure.Redis
 {
-    public class RedisService
+    // CRUD và quản lý dữ liệu với Redis
+    public class RedisService : IRedisService
     {
-        private readonly IConnectionMultiplexer _redis;
+        private readonly IDatabase _redis;
+        private readonly IConnectionMultiplexer _connection;
+        private readonly JsonSerializerOptions _jsonOptions;
 
-        public RedisService(IConnectionMultiplexer redis)
+        public RedisService(
+            IConnectionMultiplexer connection)
         {
-            _redis = redis;
+            _connection = connection;
+            _redis = connection.GetDatabase();
+
+            _jsonOptions = new JsonSerializerOptions
+            {
+                PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+            };
         }
 
-        // SET String
-        public async Task SetAsync(
-            string key,
-            string value,
-            TimeSpan expiration)
-        {
-            var db = _redis.GetDatabase();
-
-            await db.StringSetAsync(
-                key,
-                value,
-                expiration);
-        }
-
-        // SET Object -> JSON
-        public async Task SetAsync<T>(
+        /// <summary>
+        /// Lưu dữ liệu vào Redis.
+        /// </summary>
+        public async Task<bool> SetAsync<T>(
             string key,
             T value,
-            TimeSpan expiration)
+            TimeSpan? expiry = null)
         {
-            var db = _redis.GetDatabase();
+            var json = JsonSerializer.Serialize(
+                value,
+                _jsonOptions);
 
-            var json = JsonSerializer.Serialize(value);
-
-            await db.StringSetAsync(
+            return await _redis.StringSetAsync(
                 key,
                 json,
-                expiration);
+                expiry);
         }
 
-        // GET JSON -> Object
-        public async Task<T?> GetAsync<T>(string key)
+        /// <summary>
+        /// Lấy dữ liệu từ Redis.
+        /// </summary>
+        public async Task<T?> GetAsync<T>(
+            string key)
         {
-            var db = _redis.GetDatabase();
+            var value = await _redis.StringGetAsync(key);
 
-            var value = await db.StringGetAsync(key);
-
-            if (!value.HasValue)
+            if (value.IsNullOrEmpty)
                 return default;
 
-            return JsonSerializer.Deserialize<T>(value.ToString());
+            return JsonSerializer.Deserialize<T>(
+                value.ToString(),
+                _jsonOptions);
         }
 
-        public async Task<bool> ExistsAsync(string key)
+        /// <summary>
+        /// Kiểm tra key có tồn tại không.
+        /// </summary>
+        public async Task<bool> ExistsAsync(
+            string key)
         {
-            var db = _redis.GetDatabase();
-
-            return await db.KeyExistsAsync(key);
+            return await _redis.KeyExistsAsync(key);
         }
 
-        public async Task RemoveAsync(string key)
+        /// <summary>
+        /// Xóa một hoặc nhiều key.
+        /// </summary>
+        public async Task<long> RemoveAsync(
+            params string[] keys)
         {
-            var db = _redis.GetDatabase();
+            if (keys.Length == 0)
+                return 0;
 
-            await db.KeyDeleteAsync(key);
+            var redisKeys = keys
+                .Select(key => (RedisKey)key)
+                .ToArray();
+
+            return await _redis.KeyDeleteAsync(
+                redisKeys);
+        }
+
+        /// <summary>
+        /// Lấy thời gian sống còn lại của key.
+        /// </summary>
+        public async Task<TimeSpan?> GetTimeToLiveAsync(
+            string key)
+        {
+            return await _redis.KeyTimeToLiveAsync(key);
+        }
+
+        /// <summary>
+        /// Gia hạn thời gian sống của key.
+        /// </summary>
+        public async Task<bool> ExpireAsync(
+            string key,
+            TimeSpan expiry)
+        {
+            return await _redis.KeyExpireAsync(
+                key,
+                expiry);
+        }
+
+        /// <summary>
+        /// Xóa tất cả key theo pattern.
+        /// </summary>
+        public async Task RemoveByPatternAsync(
+            string pattern)
+        {
+            var keys = GetKeys(pattern).ToArray();
+
+            if (keys.Length == 0)
+                return;
+
+            await RemoveAsync(keys);
+        }
+
+        /// <summary>
+        /// Lấy danh sách key theo pattern.
+        /// </summary>
+        public IEnumerable<string> GetKeys(
+            string pattern)
+        {
+            var endpoint = _connection
+                .GetEndPoints()
+                .First();
+
+            var server = _connection
+                .GetServer(endpoint);
+
+            return server
+                .Keys(pattern: pattern)
+                .Select(key => key.ToString());
         }
     }
 }

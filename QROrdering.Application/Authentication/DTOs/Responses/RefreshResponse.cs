@@ -1,4 +1,4 @@
-﻿namespace QROrdering.Application.Authentication.DTOs
+﻿namespace QROrdering.Application.Authentication.DTOs.Responses
 {
     public class RefreshResponse
     {

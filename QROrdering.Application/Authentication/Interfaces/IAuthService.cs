@@ -1,4 +1,6 @@
 ﻿using QROrdering.Application.Authentication.DTOs;
+using QROrdering.Application.Authentication.DTOs.Requests;
+using QROrdering.Application.Authentication.DTOs.Responses;
 using QROrdering.Application.Common.Pagination;
 
 namespace QROrdering.Application.Authentication.Interfaces
@@ -26,6 +28,23 @@ namespace QROrdering.Application.Authentication.Interfaces
 
         /// Revoke a specific session of the current user.
         Task DeleteSessionAsync(Guid sessionId);
+
+        Task SendChangePasswordOtpAsync();
+
+        Task<VerifyOtpResponse> VerifyChangePasswordOtpAsync(
+            VerifyChangePasswordOtpRequest request);
+
+        Task ChangePasswordAsync(
+            ChangePasswordRequest request);
+
+        Task SendForgotPasswordOtpAsync(
+            ForgotPasswordOtpRequest request);
+
+        Task<VerifyOtpResponse> VerifyForgotPasswordOtpAsync(
+            VerifyForgotPasswordOtpRequest request);
+
+        Task ForgotPasswordAsync(
+            ForgotPasswordRequest request);
 
     }
 }

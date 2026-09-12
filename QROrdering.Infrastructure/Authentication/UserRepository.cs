@@ -58,7 +58,6 @@ namespace QROrdering.Infrastructure.Authentication
         public async Task<User?> GetByIdAsync(Guid userId)
         {
             return await _context.Users
-                .AsNoTracking()
                 .FirstOrDefaultAsync(x => x.Id == userId);
         }
 
@@ -71,6 +70,14 @@ namespace QROrdering.Infrastructure.Authentication
                     .ThenInclude(x => x.MemberRoles)
                         .ThenInclude(x => x.Role)
                 .FirstOrDefaultAsync(x => x.Id == userId);
+        }
+
+        public async Task<User?> GetByEmailAsync(string email)
+        {
+            email = email.Trim().ToLowerInvariant();
+
+            return await _context.Users
+                .FirstOrDefaultAsync(x => x.Email == email);
         }
     }
 }

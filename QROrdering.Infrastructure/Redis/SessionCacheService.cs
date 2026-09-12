@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using QROrdering.Application.Authentication.DTOs.Redis;
 using QROrdering.Application.Authentication.Interfaces;
+using QROrdering.Application.Common.Interfaces;
 using QROrdering.Infrastructure.Configurations;
 using QROrdering.Infrastructure.DTOs;
 
@@ -11,18 +12,18 @@ namespace QROrdering.Infrastructure.Redis
 {
     public class SessionCacheService : ISessionCacheService
     {
-        private readonly RedisService _redisService;
+        private readonly IRedisService _redisService;
         private readonly IUserSessionRepository _userSessionRepository;
         private readonly IMemoryCache _memoryCache;
         private readonly ILogger<SessionCacheService> _logger;
         private readonly CacheSettings _cacheSettings;
 
         public SessionCacheService(
-            RedisService redisService,
-            IUserSessionRepository userSessionRepository,
-            IMemoryCache memoryCache,
-            ILogger<SessionCacheService> logger,
-            IOptions<CacheSettings> cacheOptions)
+        IRedisService redisService,
+        IUserSessionRepository userSessionRepository,
+        IMemoryCache memoryCache,
+        ILogger<SessionCacheService> logger,
+        IOptions<CacheSettings> cacheOptions)
         {
             _redisService = redisService;
             _userSessionRepository = userSessionRepository;

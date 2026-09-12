@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace QROrdering.Application.Authentication.DTOs
+namespace QROrdering.Application.Authentication.DTOs.Requests
 {
     public class LoginRequest
     {

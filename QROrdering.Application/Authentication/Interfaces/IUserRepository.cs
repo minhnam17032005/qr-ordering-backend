@@ -20,5 +20,7 @@ namespace QROrdering.Application.Authentication.Interfaces
         Task<User?> GetByIdAsync(Guid userId);
 
         Task<User?> GetByIdWithRestaurantMembershipsAsync(Guid userId);
+
+        Task<User?> GetByEmailAsync(string email);
     }
 }

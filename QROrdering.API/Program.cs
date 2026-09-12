@@ -10,9 +10,11 @@ using Microsoft.OpenApi.Models;
 using QROrdering.API.Middleware;
 using QROrdering.Application.Authentication;
 using QROrdering.Application.Authentication.Interfaces;
+using QROrdering.Application.Common.Configurations;
 using QROrdering.Application.Common.Interfaces;
 using QROrdering.Infrastructure.Authentication;
 using QROrdering.Infrastructure.Configurations;
+using QROrdering.Infrastructure.Email;
 using QROrdering.Infrastructure.Persistence;
 using QROrdering.Infrastructure.Redis;
 using StackExchange.Redis;
@@ -28,6 +30,12 @@ builder.Services.Configure<JwtSettings>(
 
 builder.Services.Configure<CacheSettings>(
     builder.Configuration.GetSection("CacheSettings"));
+
+builder.Services.Configure<EmailSettings>(
+    builder.Configuration.GetSection("EmailSettings")); 
+
+builder.Services.Configure<OtpSettings>(
+    builder.Configuration.GetSection("OtpSettings"));
 
 var jwtSettings = builder.Configuration
     .GetSection("Jwt")
@@ -52,26 +60,31 @@ builder.Services.AddSingleton<IConnectionMultiplexer>(
 
 builder.Services.AddMemoryCache();
 
-builder.Services.AddSingleton<RedisService>();
-
 
 // =========================
 // Authentication Services
 // =========================
 
-builder.Services.AddScoped<IAuthService, AuthService>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserSessionRepository, UserSessionRepository>();
 
 builder.Services.AddScoped<IPasswordService, PasswordService>();
-builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IHashService, HashService>();
-builder.Services.AddScoped<IJwtBlacklistService, JwtBlacklistService>();
+
+builder.Services.AddSingleton<IRedisService, RedisService>();
 builder.Services.AddScoped<ISessionCacheService, SessionCacheService>();
 
-builder.Services.AddScoped<JwtAuthEvents>();
+builder.Services.AddScoped<IEmailService, EmailService>();
+builder.Services.AddScoped<IOtpService, OtpService>();
 
-builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<IJwtBlacklistService, JwtBlacklistService>();
+
+builder.Services.AddScoped<IAuthService, AuthService>();
+
+builder.Services.AddScoped<JwtAuthEvents>();
 
 
 // =========================
