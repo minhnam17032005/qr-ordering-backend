@@ -3,15 +3,15 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using QROrdering.Application.Authentication.DTOs.Redis;
+using QROrdering.Application.Common.Redis;
 
-namespace QROrdering.Application.Authentication.Interfaces
+namespace QROrdering.Application.Common.Interfaces
 {
     public interface ISessionCacheService
     {
         Task<CachedSession?> GetAsync(Guid sessionId);
 
-        Task SetAsync(UserSession userSession,bool isUserActive);
+        Task SetAsync(UserSession userSession, bool isUserActive);
 
         Task RemoveAsync(Guid sessionId);
     }

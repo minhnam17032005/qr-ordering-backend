@@ -1,7 +1,8 @@
 ﻿using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-using QROrdering.Application.Authentication.Interfaces;
+using QROrdering.Application.Common.Interfaces;
 using QROrdering.Domain.Entities.Identity;
+using QROrdering.Domain.Entities.Platform;
 using QROrdering.Infrastructure.Configurations;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
@@ -70,6 +71,62 @@ namespace QROrdering.Infrastructure.Authentication
                 signingCredentials: credentials);
 
             // Serialize JWT thành chuỗi
+            return new JwtSecurityTokenHandler()
+                .WriteToken(token);
+        }
+
+        //tạo Access Token riêng cho PlatformAdmin
+        public string GeneratePlatformAdminAccessToken(
+        PlatformAdmin admin,
+        Guid sessionId)
+        {
+            var key = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(_jwtSettings.Key));
+
+            var credentials = new SigningCredentials(
+                key,
+                SecurityAlgorithms.HmacSha256);
+
+            var claims = new List<Claim>
+            {
+                new Claim(
+                    "userId",
+                    admin.Id.ToString()),
+
+                new Claim(
+                    "username",
+                    admin.Username),
+
+                new Claim(
+                    "sid",
+                    sessionId.ToString()),
+
+                new Claim(
+                    JwtRegisteredClaimNames.Jti,
+                    Guid.NewGuid().ToString()),
+
+                new Claim(
+                    JwtRegisteredClaimNames.Iat,
+                    DateTimeOffset.UtcNow
+                        .ToUnixTimeSeconds()
+                        .ToString(),
+                    ClaimValueTypes.Integer64),
+
+                new Claim(
+                    "user_type",
+                    "platform_admin")
+            };
+
+            var expires = DateTime.UtcNow.AddMinutes(
+                _jwtSettings.AccessTokenExpirationMinutes);
+
+            var token = new JwtSecurityToken(
+                issuer: _jwtSettings.Issuer,
+                audience: _jwtSettings.Audience,
+                claims: claims,
+                expires: expires,
+                signingCredentials: credentials);
+
             return new JwtSecurityTokenHandler()
                 .WriteToken(token);
         }

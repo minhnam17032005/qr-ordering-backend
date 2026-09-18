@@ -3,6 +3,8 @@ using QROrdering.Application.Authentication.DTOs;
 using QROrdering.Application.Authentication.DTOs.Requests;
 using QROrdering.Application.Authentication.DTOs.Responses;
 using QROrdering.Application.Authentication.Interfaces;
+using QROrdering.Application.Common.DTOs;
+using QROrdering.Application.Common.Enums;
 using QROrdering.Application.Common.Interfaces;
 using QROrdering.Application.Common.Pagination;
 using QROrdering.Application.Exceptions;
@@ -482,10 +484,19 @@ namespace QROrdering.Application.Authentication
                 _currentUser.UserId);
 
             if (user == null)
+            {
                 throw new NotFoundException(
                     "Không tìm thấy người dùng.");
+            }
 
-            await _otpService.SendChangePasswordOtpAsync(user);
+            var account = new OtpAccount
+            {
+                Id = user.Id,
+                Email = user.Email,
+                AccountType = OtpAccountType.User
+            };
+
+            await _otpService.SendChangePasswordOtpAsync(account);
         }
         public async Task<VerifyOtpResponse> VerifyChangePasswordOtpAsync(
         VerifyChangePasswordOtpRequest request)
@@ -494,27 +505,47 @@ namespace QROrdering.Application.Authentication
                 _currentUser.UserId);
 
             if (user == null)
+            {
                 throw new NotFoundException(
                     "Không tìm thấy người dùng.");
+            }
 
-            return await _otpService.VerifyChangePasswordOtpAsync(
-                user,
-                request.Otp);
+            var account = new OtpAccount
+            {
+                Id = user.Id,
+                Email = user.Email,
+                AccountType = OtpAccountType.User
+            };
+
+            var result =
+                await _otpService.VerifyChangePasswordOtpAsync(
+                    account,
+                    request.Otp);
+
+            return new VerifyOtpResponse
+            {
+                VerificationToken = result.VerificationToken,
+                ExpiredAt = result.ExpiredAt
+            };
         }
 
         public async Task ChangePasswordAsync(
         ChangePasswordRequest request)
         {
             if (request.NewPassword != request.ConfirmPassword)
+            {
                 throw new BadRequestException(
                     "Mật khẩu xác nhận không trùng với mật khẩu mới.");
+            }
 
             var user = await _userRepository.GetByIdAsync(
                 _currentUser.UserId);
 
             if (user == null)
+            {
                 throw new NotFoundException(
                     "Không tìm thấy người dùng.");
+            }
 
             if (!_passwordService.Verify(
                     request.CurrentPassword,
@@ -532,21 +563,30 @@ namespace QROrdering.Application.Authentication
                     "Mật khẩu mới phải khác mật khẩu hiện tại.");
             }
 
+            var account = new OtpAccount
+            {
+                Id = user.Id,
+                Email = user.Email,
+                AccountType = OtpAccountType.User
+            };
+
             await _otpService.ValidateChangePasswordVerificationAsync(
-                user,
+                account,
                 request.VerificationToken);
 
             var sessions = await _userSessionRepository
                 .GetActiveByUserIdAsync(user.Id);
 
+            var revokedAt = DateTime.UtcNow;
+
             user.PasswordHash = _passwordService.Hash(
                 request.NewPassword);
 
-            user.UpdatedAt = DateTime.UtcNow;
+            user.UpdatedAt = revokedAt;
 
             foreach (var session in sessions)
             {
-                session.RevokedAt = DateTime.UtcNow;
+                session.RevokedAt = revokedAt;
             }
 
             await _unitOfWork.SaveChangesAsync();
@@ -573,10 +613,20 @@ namespace QROrdering.Application.Authentication
                 email);
 
             if (user == null)
+            {
                 throw new NotFoundException(
                     "Không tìm thấy người dùng.");
+            }
 
-            await _otpService.SendForgotPasswordOtpAsync(user);
+            var account = new OtpAccount
+            {
+                Id = user.Id,
+                Email = user.Email,
+                AccountType = OtpAccountType.User
+            };
+
+            await _otpService.SendForgotPasswordOtpAsync(
+                account);
         }
 
         public async Task<VerifyOtpResponse> VerifyForgotPasswordOtpAsync(
@@ -590,23 +640,52 @@ namespace QROrdering.Application.Authentication
                 email);
 
             if (user == null)
+            {
                 throw new NotFoundException(
                     "Không tìm thấy người dùng.");
+            }
 
-            return await _otpService.VerifyForgotPasswordOtpAsync(
-                user,
-                request.Otp);
+            var account = new OtpAccount
+            {
+                Id = user.Id,
+                Email = user.Email,
+                AccountType = OtpAccountType.User
+            };
+
+            var result =
+                await _otpService.VerifyForgotPasswordOtpAsync(
+                    account,
+                    request.Otp);
+
+            return new VerifyOtpResponse
+            {
+                VerificationToken = result.VerificationToken,
+                ExpiredAt = result.ExpiredAt
+            };
         }
 
-        public async Task ForgotPasswordAsync(ForgotPasswordRequest request)
+        public async Task ForgotPasswordAsync(
+        ForgotPasswordRequest request)
         {
             if (request.NewPassword != request.ConfirmPassword)
+            {
                 throw new BadRequestException(
                     "Mật khẩu xác nhận không trùng với mật khẩu mới.");
+            }
 
-            var user =
+            var email =
                 await _otpService.ValidateForgotPasswordVerificationAsync(
-                    request.VerificationToken);
+                    request.VerificationToken,
+                    OtpAccountType.User);
+
+            var user = await _userRepository.GetByEmailAsync(
+                email);
+
+            if (user == null)
+            {
+                throw new NotFoundException(
+                    "Không tìm thấy người dùng.");
+            }
 
             if (_passwordService.Verify(
                     request.NewPassword,

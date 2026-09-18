@@ -1,0 +1,15 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace QROrdering.Application.Platform.Authentication.DTOs.Responses
+{
+    public class PlatformAdminVerifyOtpResponse
+    {
+        public string VerificationToken { get; set; } = null!;
+
+        public DateTime ExpiredAt { get; set; }
+    }
+}

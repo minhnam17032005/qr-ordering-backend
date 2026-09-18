@@ -1,12 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace QROrdering.Domain.Entities.Platform
+﻿namespace QROrdering.Domain.Entities.Platform
 {
     public class PlatformAdminSession : BaseEntity
     {
         public Guid PlatformAdminId { get; set; }
 
         public string RefreshTokenHash { get; set; } = null!;
+
+        public string? DeviceName { get; set; }
 
         public DateTime ExpiresAt { get; set; }
 

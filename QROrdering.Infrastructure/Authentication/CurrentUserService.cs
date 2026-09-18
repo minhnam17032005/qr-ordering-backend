@@ -1,6 +1,6 @@
 ﻿using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
-using QROrdering.Application.Authentication.Interfaces;
+using QROrdering.Application.Common.Interfaces;
 
 namespace QROrdering.Infrastructure.Authentication
 {

@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace QROrdering.Application.Authentication.DTOs.Redis
+namespace QROrdering.Application.Common.Redis
 {
     public class CachedSession
     {

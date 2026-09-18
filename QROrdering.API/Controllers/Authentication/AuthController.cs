@@ -111,7 +111,6 @@ namespace QROrdering.API.Controllers.Authentication
                 "Làm mới token thành công.");
         }
 
-        [Authorize]
         [HttpGet("me")]
         [ProducesResponseType(typeof(ApiResponse<UserProfileResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
@@ -124,7 +123,6 @@ namespace QROrdering.API.Controllers.Authentication
                 "Lấy thông tin cá nhân thành công.");
         }
 
-        [Authorize]
         [HttpPost("logout")]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
@@ -139,7 +137,6 @@ namespace QROrdering.API.Controllers.Authentication
                 "Đăng xuất thành công.");
         }
 
-        [Authorize]
         [HttpPost("logout-all-sessions")]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
@@ -154,7 +151,6 @@ namespace QROrdering.API.Controllers.Authentication
                 "Đăng xuất khỏi tất cả phiên thành công.");
         }
 
-        [Authorize]
         [HttpPost("logout-other-sessions")]
         [ProducesResponseType(typeof(ApiResponse<object>),StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status401Unauthorized)]
@@ -167,7 +163,6 @@ namespace QROrdering.API.Controllers.Authentication
                 "Đăng xuất khỏi tất cả phiên khác thành công.");
         }
 
-        [Authorize]
         [HttpGet("sessions")]
         [ProducesResponseType(typeof(ApiResponse<PagedResponse<UserSessionResponse>>),StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status401Unauthorized)]
@@ -181,7 +176,6 @@ namespace QROrdering.API.Controllers.Authentication
                 "Lấy danh sách phiên đăng nhập thành công.");
         }
 
-        [Authorize]
         [HttpDelete("sessions/{sessionId:guid}")]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
@@ -197,7 +191,6 @@ namespace QROrdering.API.Controllers.Authentication
 
         //=== Change Password ===//
 
-        [Authorize]
         [HttpPost("change-password/send-otp")]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
@@ -211,7 +204,6 @@ namespace QROrdering.API.Controllers.Authentication
                 "Nếu email tồn tại, OTP đã được gửi.");
         }
 
-        [Authorize]
         [HttpPost("change-password/verify-otp")]
         [ProducesResponseType(typeof(ApiResponse<VerifyOtpResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -228,7 +220,6 @@ namespace QROrdering.API.Controllers.Authentication
                 "Xác thực OTP thành công.");
         }
 
-        [Authorize]
         [HttpPost("change-password/change")]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -246,7 +237,6 @@ namespace QROrdering.API.Controllers.Authentication
 
         //=== Forgot Password ===//
 
-        [AllowAnonymous]
         [HttpPost("forgot-password/send-otp")]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -261,7 +251,6 @@ namespace QROrdering.API.Controllers.Authentication
                 "Nếu email tồn tại, OTP đã được gửi.");
         }
 
-        [AllowAnonymous]
         [HttpPost("forgot-password/verify-otp")]
         [ProducesResponseType(typeof(ApiResponse<VerifyOtpResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -277,7 +266,6 @@ namespace QROrdering.API.Controllers.Authentication
                 "Xác thực OTP thành công.");
         }
 
-        [AllowAnonymous]
         [HttpPost("forgot-password/reset")]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
@@ -291,7 +279,6 @@ namespace QROrdering.API.Controllers.Authentication
                 null,
                 "Đặt lại mật khẩu thành công.");
         }
-
 
     }
 }

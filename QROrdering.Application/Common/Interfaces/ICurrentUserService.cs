@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace QROrdering.Application.Authentication.Interfaces
+namespace QROrdering.Application.Common.Interfaces
 {
     public interface ICurrentUserService
     {

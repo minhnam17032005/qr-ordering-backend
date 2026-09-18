@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using QROrdering.Application.Authentication.Interfaces;
 using QROrdering.Application.Common.Interfaces;
 using QROrdering.Infrastructure.Redis;
 

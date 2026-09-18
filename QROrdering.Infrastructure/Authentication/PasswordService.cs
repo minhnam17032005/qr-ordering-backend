@@ -1,4 +1,4 @@
-﻿using QROrdering.Application.Authentication.Interfaces;
+﻿using QROrdering.Application.Common.Interfaces;
 
 namespace QROrdering.Infrastructure.Authentication
 {

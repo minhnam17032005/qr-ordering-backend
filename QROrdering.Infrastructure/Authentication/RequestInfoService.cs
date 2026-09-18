@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Http;
-using QROrdering.Application.Authentication.Interfaces;
+using QROrdering.Application.Common.Interfaces;
 using UAParser;
 
 namespace QROrdering.Infrastructure.Authentication

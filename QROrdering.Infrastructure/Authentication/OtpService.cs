@@ -1,17 +1,13 @@
 ﻿using Microsoft.Extensions.Options;
 using QROrdering.Application.Common.Configurations;
-using QROrdering.Application.Authentication.Interfaces;
 using QROrdering.Application.Common.Interfaces;
 using QROrdering.Application.Exceptions;
-using QROrdering.Domain.Entities.Identity;
 using QROrdering.Domain.Enums;
 using QROrdering.Infrastructure.Redis;
 using QROrdering.Infrastructure.Redis.Models;
 using QROrdering.Infrastructure.Helpers;
-using QROrdering.Application.Authentication.DTOs.Responses;
-using QROrdering.Application.Authentication.DTOs.Requests;
-using QROrdering.Infrastructure.Authentication;
-using QROrdering.Infrastructure.Persistence;
+using QROrdering.Application.Common.DTOs;
+using QROrdering.Application.Common.Enums;
 
 namespace QROrdering.Application.Authentication
 {
@@ -20,51 +16,48 @@ namespace QROrdering.Application.Authentication
         private readonly IEmailService _emailService;
         private readonly IRedisService _redisService;
         private readonly IHashService _hashService;
-        private readonly IUserRepository _userRepository;
         private readonly OtpSettings _otpSettings;
 
         public OtpService(
             IEmailService emailService,
             IRedisService redisService,
             IHashService hashService,
-            IUserRepository userRepository,
             IOptions<OtpSettings> otpSettings)
         {
             _emailService = emailService;
             _redisService = redisService;
             _hashService = hashService;
-            _userRepository = userRepository;
             _otpSettings = otpSettings.Value;
         }
 
         // Gửi OTP cho chức năng đổi mật khẩu.
-        public async Task SendChangePasswordOtpAsync(User user)
+        public async Task SendChangePasswordOtpAsync(OtpAccount account)
         {
             await SendOtpAsync(
-                user,
+                account,
                 OtpType.ChangePassword,
                 "Change Password OTP",
                 "Bạn vừa yêu cầu thay đổi mật khẩu. Vui lòng sử dụng mã OTP bên dưới để tiếp tục.");
         }
 
         // Xác thực OTP đổi mật khẩu và trả về Verification Token.
-        public async Task<VerifyOtpResponse> VerifyChangePasswordOtpAsync(
-            User user,
-            string otp)
+        public async Task<OtpVerificationResult> VerifyChangePasswordOtpAsync(
+        OtpAccount account,
+        string otp)
         {
             return await VerifyOtpAsync(
-                user,
+                account,
                 otp,
                 OtpType.ChangePassword);
         }
 
         // Xác thực Verification Token đổi mật khẩu.
         public async Task ValidateChangePasswordVerificationAsync(
-            User user,
-            string verificationToken)
+        OtpAccount account,
+        string verificationToken)
         {
             var verificationKey =
-                RedisKeys.ChangePasswordVerification(user.Id);
+                GetChangePasswordVerificationKey(account);
 
             var verification =
                 await _redisService.GetAsync<RedisChangePasswordVerification>(
@@ -91,33 +84,35 @@ namespace QROrdering.Application.Authentication
         }
 
         // Gửi OTP cho chức năng quên mật khẩu.
-        public async Task SendForgotPasswordOtpAsync(User user)
+        public async Task SendForgotPasswordOtpAsync(OtpAccount account)
         {
             await SendOtpAsync(
-                user,
+                account,
                 OtpType.ForgotPassword,
                 "Forgot Password OTP",
                 "Bạn vừa yêu cầu đặt lại mật khẩu. Vui lòng sử dụng mã OTP bên dưới để tiếp tục.");
         }
 
         // Xác thực OTP quên mật khẩu và trả về Verification Token.
-        public async Task<VerifyOtpResponse> VerifyForgotPasswordOtpAsync(
-            User user,
-            string otp)
+        public async Task<OtpVerificationResult> VerifyForgotPasswordOtpAsync(
+        OtpAccount account,
+        string otp)
         {
             return await VerifyOtpAsync(
-                user,
+                account,
                 otp,
                 OtpType.ForgotPassword);
         }
 
         // Xác thực Verification Token quên mật khẩu.
-        public async Task<User> ValidateForgotPasswordVerificationAsync(
-            string verificationToken)
+        public async Task<string> ValidateForgotPasswordVerificationAsync(
+        string verificationToken,
+        OtpAccountType accountType)
         {
             var verificationKey =
-                RedisKeys.ForgotPasswordVerification(
-                    verificationToken);
+                GetForgotPasswordVerificationKey(
+                    verificationToken,
+                    accountType);
 
             var verification =
                 await _redisService.GetAsync<RedisForgotPasswordVerification>(
@@ -129,39 +124,27 @@ namespace QROrdering.Application.Authentication
                     "Verification token không hợp lệ hoặc đã hết hạn.");
             }
 
-            var user = await _userRepository
-                .GetByEmailAsync(verification.Email);
-
-            if (user == null)
-            {
-                throw new NotFoundException(
-                    "Không tìm thấy người dùng.");
-            }
-
-            // Verification token chỉ được sử dụng một lần.
             await _redisService.RemoveAsync(verificationKey);
 
-            return user;
+            return verification.Email;
         }
 
         // Tạo OTP, lưu Redis và gửi Email.
+        // Tạo OTP, lưu Redis và gửi Email.
         private async Task SendOtpAsync(
-            User user,
+            OtpAccount account,
             OtpType otpType,
             string subject,
             string message)
         {
-            var otpKey = otpType == OtpType.ChangePassword
-                ? RedisKeys.ChangePasswordOtp(user.Id)
-                : RedisKeys.ForgotPasswordOtp(user.Email);
+            var otpKey =
+                GetOtpKey(account, otpType);
 
-            var cooldownKey = otpType == OtpType.ChangePassword
-                ? RedisKeys.ChangePasswordCooldown(user.Id)
-                : RedisKeys.ForgotPasswordCooldown(user.Email);
+            var cooldownKey =
+                GetCooldownKey(account, otpType);
 
-            var rateLimitKey = otpType == OtpType.ChangePassword
-                ? RedisKeys.ChangePasswordRateLimit(user.Id)
-                : RedisKeys.ForgotPasswordRateLimit(user.Email);
+            var rateLimitKey =
+                GetRateLimitKey(account, otpType);
 
             // Check cooldown.
             if (await _redisService.ExistsAsync(cooldownKey))
@@ -207,7 +190,7 @@ namespace QROrdering.Application.Authentication
 
             // Send Email.
             await _emailService.SendOtpAsync(
-                user.Email,
+                account.Email,
                 subject,
                 message,
                 otp);
@@ -233,17 +216,16 @@ namespace QROrdering.Application.Authentication
                     _otpSettings.RateLimitWindowMinutes));
         }
 
-        private async Task<VerifyOtpResponse> VerifyOtpAsync(
-            User user,
-            string otp,
-            OtpType otpType)
+        private async Task<OtpVerificationResult> VerifyOtpAsync(
+        OtpAccount account,
+        string otp,
+        OtpType otpType)
         {
             var expiry = TimeSpan.FromMinutes(
                 _otpSettings.VerificationExpiredMinutes);
 
-            var otpKey = otpType == OtpType.ChangePassword
-                ? RedisKeys.ChangePasswordOtp(user.Id)
-                : RedisKeys.ForgotPasswordOtp(user.Email);
+            var otpKey =
+                GetOtpKey(account, otpType);
 
             // Get OTP from Redis.
             var redisOtp =
@@ -299,7 +281,7 @@ namespace QROrdering.Application.Authentication
             if (otpType == OtpType.ChangePassword)
             {
                 await _redisService.SetAsync(
-                    RedisKeys.ChangePasswordVerification(user.Id),
+                    GetChangePasswordVerificationKey(account),
                     new RedisChangePasswordVerification
                     {
                         TokenHash =
@@ -310,22 +292,90 @@ namespace QROrdering.Application.Authentication
             else
             {
                 await _redisService.SetAsync(
-                    RedisKeys.ForgotPasswordVerification(
-                        verificationToken),
+                    GetForgotPasswordVerificationKey(
+                        verificationToken,
+                        account.AccountType),
                     new RedisForgotPasswordVerification
                     {
-                        Email = user.Email
+                        Email = account.Email
                     },
                     expiry);
             }
 
-            return new VerifyOtpResponse
+            return new OtpVerificationResult
             {
                 VerificationToken = verificationToken,
                 ExpiredAt = DateTime.UtcNow.Add(expiry)
             };
         }
 
-        
+        private static string GetOtpKey(
+        OtpAccount account,
+        OtpType otpType)
+        {
+            if (account.AccountType == OtpAccountType.User)
+            {
+                return otpType == OtpType.ChangePassword
+                    ? RedisKeys.ChangePasswordOtp(account.Id)
+                    : RedisKeys.ForgotPasswordOtp(account.Email);
+            }
+
+            return otpType == OtpType.ChangePassword
+                ? RedisKeys.PlatformAdminChangePasswordOtp(account.Id)
+                : RedisKeys.PlatformAdminForgotPasswordOtp(account.Email);
+        }
+
+        private static string GetCooldownKey(
+        OtpAccount account,
+        OtpType otpType)
+        {
+            if (account.AccountType == OtpAccountType.User)
+            {
+                return otpType == OtpType.ChangePassword
+                    ? RedisKeys.ChangePasswordCooldown(account.Id)
+                    : RedisKeys.ForgotPasswordCooldown(account.Email);
+            }
+
+            return otpType == OtpType.ChangePassword
+                ? RedisKeys.PlatformAdminChangePasswordCooldown(account.Id)
+                : RedisKeys.PlatformAdminForgotPasswordCooldown(account.Email);
+        }
+
+        private static string GetRateLimitKey(
+        OtpAccount account,
+        OtpType otpType)
+        {
+            if (account.AccountType == OtpAccountType.User)
+            {
+                return otpType == OtpType.ChangePassword
+                    ? RedisKeys.ChangePasswordRateLimit(account.Id)
+                    : RedisKeys.ForgotPasswordRateLimit(account.Email);
+            }
+
+            return otpType == OtpType.ChangePassword
+                ? RedisKeys.PlatformAdminChangePasswordRateLimit(account.Id)
+                : RedisKeys.PlatformAdminForgotPasswordRateLimit(account.Email);
+        }
+
+        private static string GetChangePasswordVerificationKey(
+        OtpAccount account)
+        {
+            return account.AccountType == OtpAccountType.User
+                ? RedisKeys.ChangePasswordVerification(account.Id)
+                : RedisKeys.PlatformAdminChangePasswordVerification(
+                    account.Id);
+        }
+
+        private static string GetForgotPasswordVerificationKey(
+        string verificationToken,
+        OtpAccountType accountType)
+        {
+            return accountType == OtpAccountType.User
+                ? RedisKeys.ForgotPasswordVerification(
+                    verificationToken)
+                : RedisKeys.PlatformAdminForgotPasswordVerification(
+                    verificationToken);
+        }
+
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace QROrdering.Application.Authentication.Interfaces
+﻿namespace QROrdering.Application.Common.Interfaces
 {
     public interface IRequestInfoService
     {

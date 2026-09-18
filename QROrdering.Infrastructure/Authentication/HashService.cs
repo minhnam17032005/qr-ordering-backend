@@ -1,6 +1,6 @@
 ﻿using System.Security.Cryptography;
 using System.Text;
-using QROrdering.Application.Authentication.Interfaces;
+using QROrdering.Application.Common.Interfaces;
 
 namespace QROrdering.Infrastructure.Authentication
 {

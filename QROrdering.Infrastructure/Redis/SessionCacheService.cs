@@ -2,9 +2,9 @@
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using QROrdering.Application.Authentication.DTOs.Redis;
 using QROrdering.Application.Authentication.Interfaces;
 using QROrdering.Application.Common.Interfaces;
+using QROrdering.Application.Common.Redis;
 using QROrdering.Infrastructure.Configurations;
 using QROrdering.Infrastructure.DTOs;
 

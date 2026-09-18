@@ -1,6 +1,7 @@
 ﻿using QROrdering.Domain.Entities.Identity;
+using QROrdering.Domain.Entities.Platform;
 
-namespace QROrdering.Application.Authentication.Interfaces
+namespace QROrdering.Application.Common.Interfaces
 {
     public interface IJwtService
     {
@@ -8,6 +9,9 @@ namespace QROrdering.Application.Authentication.Interfaces
             User user,
             Guid sessionId);
 
+        string GeneratePlatformAdminAccessToken(
+            PlatformAdmin admin,
+            Guid sessionId);
         string GenerateRefreshToken();
 
         DateTime GetRefreshTokenExpiration();

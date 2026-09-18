@@ -12,12 +12,16 @@ using QROrdering.Application.Authentication;
 using QROrdering.Application.Authentication.Interfaces;
 using QROrdering.Application.Common.Configurations;
 using QROrdering.Application.Common.Interfaces;
+using QROrdering.Application.Platform.Authentication.Interfaces;
+using QROrdering.Application.Platform.Authentication;
 using QROrdering.Infrastructure.Authentication;
 using QROrdering.Infrastructure.Configurations;
 using QROrdering.Infrastructure.Email;
 using QROrdering.Infrastructure.Persistence;
+using QROrdering.Infrastructure.Platform.Authentication;
 using QROrdering.Infrastructure.Redis;
 using StackExchange.Redis;
+using QROrdering.Domain.Entities.Platform;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -69,12 +73,16 @@ builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserSessionRepository, UserSessionRepository>();
+builder.Services.AddScoped<IPlatformAdminRepository,PlatformAdminRepository>();
+builder.Services.AddScoped<IPlatformAdminSessionRepository,PlatformAdminSessionRepository>();
 
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IHashService, HashService>();
 
 builder.Services.AddSingleton<IRedisService, RedisService>();
 builder.Services.AddScoped<ISessionCacheService, SessionCacheService>();
+builder.Services.AddScoped<IPlatformAdminAuthService,PlatformAdminAuthService>();
+builder.Services.AddScoped<IPlatformAdminSessionCacheService,PlatformAdminSessionCacheService>();
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IOtpService, OtpService>();
@@ -204,6 +212,34 @@ builder.Services.AddSwaggerGen(c =>
 
 var app = builder.Build();
 
+/*using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider
+        .GetRequiredService<QROrderingDbContext>();
+
+    var passwordService = scope.ServiceProvider
+        .GetRequiredService<IPasswordService>();
+
+    if (!context.PlatformAdmins.Any())
+    {
+        var platformAdmin = new PlatformAdmin
+        {
+            Id = Guid.NewGuid(),
+            FullName = "Platform Admin",
+            Username = "admin",
+            Email = "admin@qrordering.com",
+            PasswordHash = passwordService.Hash("12345678"),
+            PhoneNumber = "0343721920",
+            AvatarUrl = null,
+            IsActive = true,
+            CreatedAt = DateTime.UtcNow,
+            UpdatedAt = null
+        };
+
+        context.PlatformAdmins.Add(platformAdmin);
+        context.SaveChanges();
+    }
+};*/
 
 // =========================
 // Global Exception Middleware
