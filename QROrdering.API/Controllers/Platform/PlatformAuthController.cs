@@ -12,7 +12,7 @@ using QROrdering.Application.Platform.Authentication.DTOs.Responses;
 using QROrdering.Application.Platform.Authentication.Interfaces;
 using QROrdering.Infrastructure.Configurations;
 
-namespace QROrdering.API.Controllers.Authentication
+namespace QROrdering.API.Controllers.Platform
 {
     [ApiController]
     [Route("api/platform/auth")]
@@ -33,8 +33,8 @@ namespace QROrdering.API.Controllers.Authentication
         }
 
         [HttpPost("login")]
-        [ProducesResponseType(typeof(ApiResponse<PlatformAdminLoginResponse>),StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<PlatformAdminLoginResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<ApiResponse<PlatformAdminLoginResponse>>> Login(PlatformAdminLoginRequest request)
         {
             var (response, platformRefreshToken) =
@@ -58,8 +58,8 @@ namespace QROrdering.API.Controllers.Authentication
         }
 
         [HttpPost("refresh")]
-        [ProducesResponseType(typeof(ApiResponse<PlatformAdminRefreshResponse>),StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ApiResponse<PlatformAdminRefreshResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
         public async Task<ActionResult<ApiResponse<PlatformAdminRefreshResponse>>> Refresh()
         {
             // Lấy refresh token từ cookie
@@ -96,9 +96,9 @@ namespace QROrdering.API.Controllers.Authentication
         }
 
         [HttpGet("me")]
-        [ProducesResponseType(typeof(ApiResponse<PlatformAdminProfileResponse>),StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<ApiResponse<PlatformAdminProfileResponse>>>GetProfile()
+        [ProducesResponseType(typeof(ApiResponse<PlatformAdminProfileResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<ApiResponse<PlatformAdminProfileResponse>>> GetProfile()
         {
             var result =
                 await _platformAdminAuthService.GetProfileAsync();
@@ -109,9 +109,9 @@ namespace QROrdering.API.Controllers.Authentication
         }
 
         [HttpPost("logout")]
-        [ProducesResponseType(typeof(ApiResponse<object>),StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<ApiResponse<object>>>Logout()
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<ApiResponse<object>>> Logout()
         {
             await _platformAdminAuthService.LogoutAsync();
 
@@ -124,9 +124,9 @@ namespace QROrdering.API.Controllers.Authentication
         }
 
         [HttpPost("logout-all-sessions")]
-        [ProducesResponseType(typeof(ApiResponse<object>),StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<ApiResponse<object>>>LogoutAllSessions()
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<ApiResponse<object>>> LogoutAllSessions()
         {
             await _platformAdminAuthService.LogoutAllSessionsAsync();
 
@@ -139,9 +139,9 @@ namespace QROrdering.API.Controllers.Authentication
         }
 
         [HttpGet("sessions")]
-        [ProducesResponseType(typeof(ApiResponse<PagedResponse<PlatformAdminSessionResponse>>),StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status401Unauthorized)]
-        public async Task<ActionResult<ApiResponse<PagedResponse<PlatformAdminSessionResponse>>>>GetSessions([FromQuery] PagedRequest request)
+        [ProducesResponseType(typeof(ApiResponse<PagedResponse<PlatformAdminSessionResponse>>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        public async Task<ActionResult<ApiResponse<PagedResponse<PlatformAdminSessionResponse>>>> GetSessions([FromQuery] PagedRequest request)
         {
             var sessions =
                 await _platformAdminAuthService
@@ -153,10 +153,10 @@ namespace QROrdering.API.Controllers.Authentication
         }
 
         [HttpDelete("sessions/{sessionId:guid}")]
-        [ProducesResponseType(typeof(ApiResponse<object>),StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ApiResponse<object>>>DeleteSession(Guid sessionId)
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<object>>> DeleteSession(Guid sessionId)
         {
             await _platformAdminAuthService
                 .DeleteSessionAsync(sessionId);
@@ -169,10 +169,10 @@ namespace QROrdering.API.Controllers.Authentication
         //=== Change Password ===//
 
         [HttpPost("change-password/send-otp")]
-        [ProducesResponseType(typeof(ApiResponse<object>),StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ApiResponse<object>>>SendChangePasswordOtp()
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<object>>> SendChangePasswordOtp()
         {
             await _platformAdminAuthService
                 .SendChangePasswordOtpAsync();
@@ -183,12 +183,12 @@ namespace QROrdering.API.Controllers.Authentication
         }
 
         [HttpPost("change-password/verify-otp")]
-        [ProducesResponseType(typeof(ApiResponse<PlatformAdminVerifyOtpResponse>),StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ApiResponse<PlatformAdminVerifyOtpResponse>>>VerifyChangePasswordOtp(
-        [FromBody]PlatformAdminVerifyChangePasswordOtpRequest request)
+        [ProducesResponseType(typeof(ApiResponse<PlatformAdminVerifyOtpResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<PlatformAdminVerifyOtpResponse>>> VerifyChangePasswordOtp(
+        [FromBody] PlatformAdminVerifyChangePasswordOtpRequest request)
         {
             var response =
                 await _platformAdminAuthService
@@ -200,12 +200,12 @@ namespace QROrdering.API.Controllers.Authentication
         }
 
         [HttpPost("change-password/change")]
-        [ProducesResponseType(typeof(ApiResponse<object>),StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status401Unauthorized)]
-        [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ApiResponse<object>>>ChangePassword(
-        [FromBody]PlatformAdminChangePasswordRequest request)
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<object>>> ChangePassword(
+        [FromBody] PlatformAdminChangePasswordRequest request)
         {
             await _platformAdminAuthService
                 .ChangePasswordAsync(request);
@@ -217,11 +217,11 @@ namespace QROrdering.API.Controllers.Authentication
 
         //=== Forgot Password ===//
         [HttpPost("forgot-password/send-otp")]
-        [ProducesResponseType(typeof(ApiResponse<object>),StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ApiResponse<object>>>SendForgotPasswordOtp(
-        [FromBody]PlatformAdminForgotPasswordOtpRequest request)
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<object>>> SendForgotPasswordOtp(
+        [FromBody] PlatformAdminForgotPasswordOtpRequest request)
         {
             await _platformAdminAuthService
                 .SendForgotPasswordOtpAsync(request);
@@ -232,11 +232,11 @@ namespace QROrdering.API.Controllers.Authentication
         }
 
         [HttpPost("forgot-password/verify-otp")]
-        [ProducesResponseType(typeof(ApiResponse<PlatformAdminVerifyOtpResponse>),StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ApiResponse<PlatformAdminVerifyOtpResponse>>>VerifyForgotPasswordOtp(
-        [FromBody]PlatformAdminVerifyForgotPasswordOtpRequest request)
+        [ProducesResponseType(typeof(ApiResponse<PlatformAdminVerifyOtpResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<PlatformAdminVerifyOtpResponse>>> VerifyForgotPasswordOtp(
+        [FromBody] PlatformAdminVerifyForgotPasswordOtpRequest request)
         {
             var response =
                 await _platformAdminAuthService
@@ -249,11 +249,11 @@ namespace QROrdering.API.Controllers.Authentication
 
         [AllowAnonymous]
         [HttpPost("forgot-password/reset")]
-        [ProducesResponseType(typeof(ApiResponse<object>),StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status404NotFound)]
-        public async Task<ActionResult<ApiResponse<object>>>ResetForgotPassword(
-        [FromBody]PlatformAdminForgotPasswordRequest request)
+        [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<object>>> ResetForgotPassword(
+        [FromBody] PlatformAdminForgotPasswordRequest request)
         {
             await _platformAdminAuthService
                 .ForgotPasswordAsync(request);

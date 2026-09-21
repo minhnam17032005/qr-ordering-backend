@@ -22,6 +22,9 @@ using QROrdering.Infrastructure.Platform.Authentication;
 using QROrdering.Infrastructure.Redis;
 using StackExchange.Redis;
 using QROrdering.Domain.Entities.Platform;
+using QROrdering.Application.Platform.Restaurants.Interfaces;
+using QROrdering.Infrastructure.Platform.Restaurants;
+using QROrdering.Application.Platform.Restaurants;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -75,6 +78,7 @@ builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IUserSessionRepository, UserSessionRepository>();
 builder.Services.AddScoped<IPlatformAdminRepository,PlatformAdminRepository>();
 builder.Services.AddScoped<IPlatformAdminSessionRepository,PlatformAdminSessionRepository>();
+builder.Services.AddScoped<IPlatformRestaurantRepository,PlatformRestaurantRepository>();
 
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IHashService, HashService>();
@@ -83,6 +87,7 @@ builder.Services.AddSingleton<IRedisService, RedisService>();
 builder.Services.AddScoped<ISessionCacheService, SessionCacheService>();
 builder.Services.AddScoped<IPlatformAdminAuthService,PlatformAdminAuthService>();
 builder.Services.AddScoped<IPlatformAdminSessionCacheService,PlatformAdminSessionCacheService>();
+builder.Services.AddScoped<IPlatformRestaurantService,PlatformRestaurantService>();
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IOtpService, OtpService>();
