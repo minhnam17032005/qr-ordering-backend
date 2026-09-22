@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace QROrdering.Application.Platform.Restaurants.DTOs.Responses
+﻿namespace QROrdering.Application.Platform.Restaurants.DTOs.Responses
 {
     public class PlatformRestaurantResponse
     {
