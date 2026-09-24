@@ -3,8 +3,7 @@
     public enum ServiceRegistrationStatus
     {
         Pending = 1,
-        Processing = 2,
-        Approved = 3,
-        Rejected = 4
+        Approved = 2,
+        Rejected = 3
     }
 }

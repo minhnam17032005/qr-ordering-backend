@@ -28,6 +28,15 @@ namespace QROrdering.Infrastructure.Persistence.Configurations
             // PROPERTIES
             // ============================================================
 
+            // ============================================================
+            // PROPERTIES
+            // ============================================================
+
+            // Người đăng ký
+
+            builder.Property(x => x.UserId)
+                .IsRequired();
+
             builder.Property(x => x.ContactName)
                 .IsRequired()
                 .HasMaxLength(100);
@@ -39,12 +48,30 @@ namespace QROrdering.Infrastructure.Persistence.Configurations
             builder.Property(x => x.PhoneNumber)
                 .HasMaxLength(20);
 
+
+            // Thông tin nhà hàng đăng ký
+
             builder.Property(x => x.RestaurantName)
                 .IsRequired()
                 .HasMaxLength(200);
 
             builder.Property(x => x.RestaurantAddress)
                 .HasMaxLength(500);
+
+            builder.Property(x => x.RestaurantPhoneNumber)
+                .HasMaxLength(20);
+
+            builder.Property(x => x.RestaurantEmail)
+                .HasMaxLength(255);
+
+            builder.Property(x => x.RestaurantDescription)
+                .HasMaxLength(1000);
+
+            builder.Property(x => x.RestaurantLogoUrl)
+                .HasMaxLength(500);
+
+
+            // Trạng thái đăng ký
 
             builder.Property(x => x.Status)
                 .IsRequired()
@@ -54,12 +81,16 @@ namespace QROrdering.Infrastructure.Persistence.Configurations
             builder.Property(x => x.Note)
                 .HasMaxLength(1000);
 
+
+            // Người Platform xử lý
+
             builder.Property(x => x.ProcessedAt);
 
 
             // ============================================================
             // INDEXES
             // ============================================================
+            builder.HasIndex(x => x.UserId);
 
             builder.HasIndex(x => x.Email);
 
@@ -73,6 +104,12 @@ namespace QROrdering.Infrastructure.Persistence.Configurations
             // ============================================================
             // RELATIONSHIPS
             // ============================================================
+
+            // User 1 - N ServiceRegistration
+            builder.HasOne(x => x.User)
+                .WithMany()
+                .HasForeignKey(x => x.UserId)
+                .OnDelete(DeleteBehavior.NoAction);
 
             // PlatformAdmin 1 - N ServiceRegistration
             builder.HasOne(x => x.ProcessedByPlatformAdmin)

@@ -1,12 +1,14 @@
-﻿using System.ComponentModel.DataAnnotations;
-using QROrdering.Domain.Entities.Membership;
+﻿using QROrdering.Domain.Entities.Membership;
 using QROrdering.Domain.Entities.RestaurantManagement;
+using QROrdering.Domain.Enums;
 
 namespace QROrdering.Domain.Entities.Authorization
 {
     public class Role : BaseEntity
     {
         public Guid RestaurantId { get; set; }
+
+        public RoleType Type { get; set; }
 
         public string Name { get; set; } = null!;
 

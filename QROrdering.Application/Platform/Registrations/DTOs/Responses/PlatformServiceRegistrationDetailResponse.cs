@@ -1,11 +1,11 @@
-﻿using QROrdering.Domain.Entities.Identity;
-using QROrdering.Domain.Entities.RestaurantManagement;
-using QROrdering.Domain.Enums;
+﻿using QROrdering.Domain.Enums;
 
-namespace QROrdering.Domain.Entities.Platform
+namespace QROrdering.Application.Platform.Registrations.DTOs.Responses
 {
-    public class ServiceRegistration : BaseEntity
+    public class PlatformServiceRegistrationDetailResponse
     {
+        public Guid Id { get; set; }
+
         // Người đăng ký
 
         public Guid UserId { get; set; }
@@ -17,7 +17,7 @@ namespace QROrdering.Domain.Entities.Platform
         public string? PhoneNumber { get; set; }
 
 
-        // Thông tin nhà hàng đăng ký
+        // Thông tin nhà hàng
 
         public string RestaurantName { get; set; } = null!;
 
@@ -32,32 +32,26 @@ namespace QROrdering.Domain.Entities.Platform
         public string? RestaurantLogoUrl { get; set; }
 
 
-        // Trạng thái đăng ký
+        // Trạng thái
 
-        public ServiceRegistrationStatus Status { get; set; }
-            = ServiceRegistrationStatus.Pending;
+        public string Status { get; set; } = null!;
 
         public string? Note { get; set; }
 
 
-        // Người Platform xử lý
+        // Platform xử lý
 
         public Guid? ProcessedByPlatformAdminId { get; set; }
 
         public DateTime? ProcessedAt { get; set; }
 
 
-        // Restaurant được tạo sau khi approve
+        // Restaurant sau khi approve
 
         public Guid? RestaurantId { get; set; }
 
+        public DateTime CreatedAt { get; set; }
 
-        // Navigation Properties
-
-        public User User { get; set; } = null!;
-
-        public PlatformAdmin? ProcessedByPlatformAdmin { get; set; }
-
-        public Restaurant? Restaurant { get; set; }
+        public DateTime? UpdatedAt { get; set; }
     }
 }

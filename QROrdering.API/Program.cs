@@ -1,9 +1,10 @@
 ﻿using System.Security.Claims;
 using System.Text;
 
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
+using QROrdering.Infrastructure.Persistence;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 
@@ -17,7 +18,6 @@ using QROrdering.Application.Platform.Authentication;
 using QROrdering.Infrastructure.Authentication;
 using QROrdering.Infrastructure.Configurations;
 using QROrdering.Infrastructure.Email;
-using QROrdering.Infrastructure.Persistence;
 using QROrdering.Infrastructure.Platform.Authentication;
 using QROrdering.Infrastructure.Redis;
 using StackExchange.Redis;
@@ -28,6 +28,14 @@ using QROrdering.Application.Platform.Restaurants;
 using QROrdering.Application.Platform.Users.Interfaces;
 using QROrdering.Application.Platform.Users;
 using QROrdering.Infrastructure.Platform.Users;
+using QROrdering.Application.Platform.Registrations.Interfaces;
+using QROrdering.Application.Platform.Registrations;
+using QROrdering.Infrastructure.Platform.Registrations;
+using QROrdering.Application.Authorization.Interfaces;
+using QROrdering.Application.Membership.Interfaces;
+using QROrdering.Infrastructure.Authorization;
+using QROrdering.Infrastructure.Membership;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -83,6 +91,12 @@ builder.Services.AddScoped<IPlatformAdminRepository,PlatformAdminRepository>();
 builder.Services.AddScoped<IPlatformAdminSessionRepository,PlatformAdminSessionRepository>();
 builder.Services.AddScoped<IPlatformRestaurantRepository,PlatformRestaurantRepository>();
 builder.Services.AddScoped<IPlatformUserRepository,PlatformUserRepository>();
+builder.Services.AddScoped<IPlatformServiceRegistrationRepository,PlatformServiceRegistrationRepository>();
+// Authorization
+builder.Services.AddScoped<IRoleRepository,RoleRepository>();
+// Membership
+builder.Services.AddScoped<IRestaurantMemberRepository,RestaurantMemberRepository>();
+builder.Services.AddScoped<IMemberRoleRepository,MemberRoleRepository>();
 
 
 builder.Services.AddScoped<IPasswordService, PasswordService>();
@@ -94,6 +108,7 @@ builder.Services.AddScoped<IPlatformAdminAuthService,PlatformAdminAuthService>()
 builder.Services.AddScoped<IPlatformAdminSessionCacheService,PlatformAdminSessionCacheService>();
 builder.Services.AddScoped<IPlatformRestaurantService,PlatformRestaurantService>();
 builder.Services.AddScoped<IPlatformUserService,PlatformUserService>();
+builder.Services.AddScoped<IPlatformServiceRegistrationService,PlatformServiceRegistrationService>();
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IOtpService, OtpService>();
