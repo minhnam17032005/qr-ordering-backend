@@ -1,6 +1,8 @@
-﻿using QROrdering.Application.Common.Interfaces;
-
+﻿using Microsoft.Data.SqlClient;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage;
+using QROrdering.Application.Common.Interfaces;
+using QROrdering.Application.Exceptions;
 
 namespace QROrdering.Infrastructure.Persistence
 {
@@ -52,10 +54,21 @@ namespace QROrdering.Infrastructure.Persistence
             _transaction = null;
         }
 
-        // Commit toàn bộ thay đổi vào database
+        // Lưu thay đổi và chuyển lỗi unique constraint thành ConflictException.
         public async Task SaveChangesAsync()
         {
-            await _context.SaveChangesAsync();
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateException ex) when (
+                ex.InnerException is SqlException sqlException &&
+                (sqlException.Number == 2601 ||
+                 sqlException.Number == 2627))
+            {
+                throw new ConflictException(
+                    "Dữ liệu đã tồn tại hoặc bị trùng.");
+            }
         }
     }
 }

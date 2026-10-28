@@ -6,5 +6,12 @@ namespace QROrdering.Application.Authorization.Interfaces
     {
         Task AddAsync(
             Role role);
+
+        Task<List<Role>> GetByIdsInRestaurantAsync(
+            Guid restaurantId,
+            List<Guid> roleIds);
+
+        Task<List<Role>> GetActiveByRestaurantIdAsync(
+            Guid restaurantId);
     }
 }

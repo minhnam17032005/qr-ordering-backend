@@ -1,4 +1,5 @@
 ﻿using QROrdering.Domain.Entities.Identity;
+using QROrdering.Domain.Entities.Membership;
 
 namespace QROrdering.Application.Authentication.Interfaces
 {
@@ -22,5 +23,15 @@ namespace QROrdering.Application.Authentication.Interfaces
         Task<User?> GetByIdWithRestaurantMembershipsAsync(Guid userId);
 
         Task<User?> GetByEmailAsync(string email);
+
+        Task<User?> GetByLookupAsync(
+            Guid? userId,
+            string? email,
+            string? phoneNumber);
+
+        Task<RestaurantMember?> GetByUserIdAndRestaurantIdAsync(
+            Guid userId,
+            Guid restaurantId);
+
     }
 }

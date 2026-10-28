@@ -1,40 +1,38 @@
 ﻿using System.Security.Claims;
 using System.Text;
-
-using Microsoft.EntityFrameworkCore;
-using QROrdering.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
-
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-
 using QROrdering.API.Middleware;
 using QROrdering.Application.Authentication;
 using QROrdering.Application.Authentication.Interfaces;
+using QROrdering.Application.Authorization.Interfaces;
 using QROrdering.Application.Common.Configurations;
 using QROrdering.Application.Common.Interfaces;
-using QROrdering.Application.Platform.Authentication.Interfaces;
+using QROrdering.Application.Membership;
+using QROrdering.Application.Membership.Interfaces;
 using QROrdering.Application.Platform.Authentication;
+using QROrdering.Application.Platform.Authentication.Interfaces;
+using QROrdering.Application.Platform.Registrations;
+using QROrdering.Application.Platform.Registrations.Interfaces;
+using QROrdering.Application.Platform.Restaurants;
+using QROrdering.Application.Platform.Restaurants.Interfaces;
+using QROrdering.Application.Platform.Users;
+using QROrdering.Application.Platform.Users.Interfaces;
+using QROrdering.Domain.Entities.Platform;
 using QROrdering.Infrastructure.Authentication;
+using QROrdering.Infrastructure.Authorization;
 using QROrdering.Infrastructure.Configurations;
 using QROrdering.Infrastructure.Email;
+using QROrdering.Infrastructure.Membership;
+using QROrdering.Infrastructure.Persistence;
 using QROrdering.Infrastructure.Platform.Authentication;
+using QROrdering.Infrastructure.Platform.Registrations;
+using QROrdering.Infrastructure.Platform.Restaurants;
+using QROrdering.Infrastructure.Platform.Users;
 using QROrdering.Infrastructure.Redis;
 using StackExchange.Redis;
-using QROrdering.Domain.Entities.Platform;
-using QROrdering.Application.Platform.Restaurants.Interfaces;
-using QROrdering.Infrastructure.Platform.Restaurants;
-using QROrdering.Application.Platform.Restaurants;
-using QROrdering.Application.Platform.Users.Interfaces;
-using QROrdering.Application.Platform.Users;
-using QROrdering.Infrastructure.Platform.Users;
-using QROrdering.Application.Platform.Registrations.Interfaces;
-using QROrdering.Application.Platform.Registrations;
-using QROrdering.Infrastructure.Platform.Registrations;
-using QROrdering.Application.Authorization.Interfaces;
-using QROrdering.Application.Membership.Interfaces;
-using QROrdering.Infrastructure.Authorization;
-using QROrdering.Infrastructure.Membership;
 
 
 var builder = WebApplication.CreateBuilder(args);
@@ -109,6 +107,7 @@ builder.Services.AddScoped<IPlatformAdminSessionCacheService,PlatformAdminSessio
 builder.Services.AddScoped<IPlatformRestaurantService,PlatformRestaurantService>();
 builder.Services.AddScoped<IPlatformUserService,PlatformUserService>();
 builder.Services.AddScoped<IPlatformServiceRegistrationService,PlatformServiceRegistrationService>();
+builder.Services.AddScoped<IRestaurantMembershipService, RestaurantMembershipService>();
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IOtpService, OtpService>();

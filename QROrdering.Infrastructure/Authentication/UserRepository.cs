@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using QROrdering.Application.Authentication.Interfaces;
 using QROrdering.Domain.Entities.Identity;
+using QROrdering.Domain.Entities.Membership;
 using QROrdering.Infrastructure.Persistence;
 
 namespace QROrdering.Infrastructure.Authentication
@@ -79,5 +80,50 @@ namespace QROrdering.Infrastructure.Authentication
             return await _context.Users
                 .FirstOrDefaultAsync(x => x.Email == email);
         }
+
+        public async Task<User?> GetByLookupAsync(
+            Guid? userId,
+            string? email,
+            string? phoneNumber)
+        {
+            var query = _context.Users
+                .AsNoTracking()
+                .AsQueryable();
+
+            if (userId.HasValue)
+            {
+                query = query.Where(x => x.Id == userId.Value);
+            }
+            else if (!string.IsNullOrWhiteSpace(email))
+            {
+                var normalizedEmail = email.Trim().ToLower();
+
+                query = query.Where(x =>
+                    x.Email != null &&
+                    x.Email.ToLower() == normalizedEmail);
+            }
+            else if (!string.IsNullOrWhiteSpace(phoneNumber))
+            {
+                var normalizedPhoneNumber = phoneNumber.Trim();
+
+                query = query.Where(x =>
+                    x.PhoneNumber == normalizedPhoneNumber);
+            }
+
+            return await query.FirstOrDefaultAsync();
+        }
+
+
+        public async Task<RestaurantMember?> GetByUserIdAndRestaurantIdAsync(
+            Guid userId,
+            Guid restaurantId)
+        {
+            return await _context.RestaurantMembers
+                .AsNoTracking()
+                .FirstOrDefaultAsync(x =>
+                    x.UserId == userId &&
+                    x.RestaurantId == restaurantId);
+        }
+
     }
 }
