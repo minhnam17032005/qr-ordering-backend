@@ -88,7 +88,7 @@ namespace QROrdering.API.Controllers.Platform
                 "Cập nhật người dùng thành công.");
         }
 
-        [HttpPost("{userId:guid}/activate")]
+        [HttpPatch("{userId:guid}/activate")]
         [ProducesResponseType(typeof(ApiResponse<object>),StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status401Unauthorized)]
@@ -103,7 +103,7 @@ namespace QROrdering.API.Controllers.Platform
                 "Kích hoạt người dùng thành công.");
         }
 
-        [HttpPost("{userId:guid}/deactivate")]
+        [HttpPatch("{userId:guid}/deactivate")]
         [ProducesResponseType(typeof(ApiResponse<object>),StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse),StatusCodes.Status401Unauthorized)]

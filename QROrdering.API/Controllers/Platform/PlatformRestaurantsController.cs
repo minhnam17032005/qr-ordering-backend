@@ -99,7 +99,7 @@ namespace QROrdering.API.Controllers.Platform
 
         //=== Activate Restaurant ===//
 
-        [HttpPost("{restaurantId:guid}/activate")]
+        [HttpPatch("{restaurantId:guid}/activate")]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
@@ -117,7 +117,7 @@ namespace QROrdering.API.Controllers.Platform
 
         //=== Deactivate Restaurant ===//
 
-        [HttpPost("{restaurantId:guid}/deactivate")]
+        [HttpPatch("{restaurantId:guid}/deactivate")]
         [ProducesResponseType(typeof(ApiResponse<object>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]

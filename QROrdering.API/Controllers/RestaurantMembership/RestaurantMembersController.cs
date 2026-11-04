@@ -151,7 +151,7 @@ namespace QROrdering.API.Controllers.Restaurants
                 "Cập nhật vai trò thành viên thành công.");
         }
 
-        [HttpPost("members/{memberId:guid}/activate")]
+        [HttpPatch("members/{memberId:guid}/activate")]
         [ProducesResponseType(typeof(ApiResponse<ActivateMemberResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]
@@ -171,7 +171,7 @@ namespace QROrdering.API.Controllers.Restaurants
                 "Kích hoạt thành viên thành công.");
         }
 
-        [HttpPost("members/{memberId:guid}/deactivate")]
+        [HttpPatch("members/{memberId:guid}/deactivate")]
         [ProducesResponseType(typeof(ApiResponse<DeactivateMemberResponse>), StatusCodes.Status200OK)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status401Unauthorized)]

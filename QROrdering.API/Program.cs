@@ -20,6 +20,8 @@ using QROrdering.Application.Platform.Restaurants;
 using QROrdering.Application.Platform.Restaurants.Interfaces;
 using QROrdering.Application.Platform.Users;
 using QROrdering.Application.Platform.Users.Interfaces;
+using QROrdering.Application.RestaurantManagement.Categories;
+using QROrdering.Application.RestaurantManagement.Categories.Interfaces;
 using QROrdering.Domain.Entities.Platform;
 using QROrdering.Infrastructure.Authentication;
 using QROrdering.Infrastructure.Authorization;
@@ -32,6 +34,7 @@ using QROrdering.Infrastructure.Platform.Registrations;
 using QROrdering.Infrastructure.Platform.Restaurants;
 using QROrdering.Infrastructure.Platform.Users;
 using QROrdering.Infrastructure.Redis;
+using QROrdering.Infrastructure.RestaurantManagement.Categories;
 using StackExchange.Redis;
 
 
@@ -96,6 +99,9 @@ builder.Services.AddScoped<IRoleRepository,RoleRepository>();
 builder.Services.AddScoped<IRestaurantMemberRepository,RestaurantMemberRepository>();
 builder.Services.AddScoped<IMemberRoleRepository,MemberRoleRepository>();
 
+builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+
+
 
 builder.Services.AddScoped<IPasswordService, PasswordService>();
 builder.Services.AddScoped<IHashService, HashService>();
@@ -108,6 +114,7 @@ builder.Services.AddScoped<IPlatformRestaurantService,PlatformRestaurantService>
 builder.Services.AddScoped<IPlatformUserService,PlatformUserService>();
 builder.Services.AddScoped<IPlatformServiceRegistrationService,PlatformServiceRegistrationService>();
 builder.Services.AddScoped<IRestaurantMembershipService, RestaurantMembershipService>();
+builder.Services.AddScoped<ICategoryService, CategoryService>();
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IOtpService, OtpService>();
