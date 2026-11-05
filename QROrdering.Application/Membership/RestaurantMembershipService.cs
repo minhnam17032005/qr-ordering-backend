@@ -61,12 +61,6 @@ namespace QROrdering.Application.Membership
                     "RestaurantId không hợp lệ.");
             }
 
-            if (request.Page < 1 || request.PageSize < 1)
-            {
-                throw new BadRequestException(
-                    "Page và PageSize phải lớn hơn hoặc bằng 1.");
-            }
-
             var isAdmin =
                 await _restaurantMemberRepository.IsActiveAdminAsync(
                     _currentUser.UserId,

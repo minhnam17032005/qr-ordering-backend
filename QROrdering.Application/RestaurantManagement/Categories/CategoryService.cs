@@ -35,17 +35,6 @@ namespace QROrdering.Application.RestaurantManagement.Categories
             if (restaurantId == Guid.Empty)
                 throw new BadRequestException("RestaurantId không hợp lệ.");
 
-            if (request is null)
-                throw new BadRequestException("Dữ liệu phân trang không hợp lệ.");
-
-            if (request.Page < 1 ||
-                request.PageSize < 1 ||
-                request.PageSize > MaxPageSize)
-            {
-                throw new BadRequestException(
-                    $"Page phải lớn hơn hoặc bằng 1 và PageSize phải từ 1 đến {MaxPageSize}.");
-            }
-
             var restaurantExists =
                 await _categoryRepository.RestaurantExistsAsync(restaurantId);
 

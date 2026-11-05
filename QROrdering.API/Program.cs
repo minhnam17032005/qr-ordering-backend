@@ -22,6 +22,8 @@ using QROrdering.Application.Platform.Users;
 using QROrdering.Application.Platform.Users.Interfaces;
 using QROrdering.Application.RestaurantManagement.Categories;
 using QROrdering.Application.RestaurantManagement.Categories.Interfaces;
+using QROrdering.Application.RestaurantManagement.Products;
+using QROrdering.Application.RestaurantManagement.Products.Interfaces;
 using QROrdering.Domain.Entities.Platform;
 using QROrdering.Infrastructure.Authentication;
 using QROrdering.Infrastructure.Authorization;
@@ -35,6 +37,7 @@ using QROrdering.Infrastructure.Platform.Restaurants;
 using QROrdering.Infrastructure.Platform.Users;
 using QROrdering.Infrastructure.Redis;
 using QROrdering.Infrastructure.RestaurantManagement.Categories;
+using QROrdering.Infrastructure.RestaurantManagement.Products;
 using StackExchange.Redis;
 
 
@@ -100,6 +103,7 @@ builder.Services.AddScoped<IRestaurantMemberRepository,RestaurantMemberRepositor
 builder.Services.AddScoped<IMemberRoleRepository,MemberRoleRepository>();
 
 builder.Services.AddScoped<ICategoryRepository, CategoryRepository>();
+builder.Services.AddScoped<IProductRepository, ProductRepository>();
 
 
 
@@ -115,6 +119,7 @@ builder.Services.AddScoped<IPlatformUserService,PlatformUserService>();
 builder.Services.AddScoped<IPlatformServiceRegistrationService,PlatformServiceRegistrationService>();
 builder.Services.AddScoped<IRestaurantMembershipService, RestaurantMembershipService>();
 builder.Services.AddScoped<ICategoryService, CategoryService>();
+builder.Services.AddScoped<IProductService, ProductService>();
 
 builder.Services.AddScoped<IEmailService, EmailService>();
 builder.Services.AddScoped<IOtpService, OtpService>();
