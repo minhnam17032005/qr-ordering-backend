@@ -59,6 +59,9 @@ builder.Services.Configure<EmailSettings>(
 builder.Services.Configure<OtpSettings>(
     builder.Configuration.GetSection("OtpSettings"));
 
+builder.Services.Configure<AppSettings>(
+    builder.Configuration.GetSection("AppSettings"));
+
 var jwtSettings = builder.Configuration
     .GetSection("Jwt")
     .Get<JwtSettings>()
