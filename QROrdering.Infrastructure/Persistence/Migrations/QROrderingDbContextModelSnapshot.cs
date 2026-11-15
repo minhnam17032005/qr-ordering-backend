@@ -22,6 +22,51 @@ namespace QROrdering.Infrastructure.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("CustomerSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uniqueidentifier")
+                        .HasDefaultValueSql("NEWSEQUENTIALID()");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETUTCDATE()");
+
+                    b.Property<DateTime?>("EndedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<Guid>("RestaurantId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<string>("SessionTokenHash")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("nvarchar(256)");
+
+                    b.Property<DateTime>("StartedAt")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.Property<Guid>("TableId")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime?>("UpdatedAt")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("SessionTokenHash")
+                        .IsUnique();
+
+                    b.HasIndex("RestaurantId", "TableId", "Status");
+
+                    b.ToTable("CustomerSessions", (string)null);
+                });
+
             modelBuilder.Entity("QROrdering.Domain.Entities.Authorization.Permission", b =>
                 {
                     b.Property<Guid>("Id")
@@ -354,55 +399,6 @@ namespace QROrdering.Infrastructure.Migrations
                         .IsUnique();
 
                     b.ToTable("RestaurantMembers", (string)null);
-                });
-
-            modelBuilder.Entity("QROrdering.Domain.Entities.Ordering.CustomerSession", b =>
-                {
-                    b.Property<Guid>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("uniqueidentifier")
-                        .HasDefaultValueSql("NEWSEQUENTIALID()");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("datetime2")
-                        .HasDefaultValueSql("GETUTCDATE()");
-
-                    b.Property<string>("CustomerName")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime?>("EndedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<Guid>("RestaurantId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<string>("SessionToken")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("StartedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("TableId")
-                        .HasColumnType("uniqueidentifier");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("SessionToken")
-                        .IsUnique();
-
-                    b.HasIndex("RestaurantId", "TableId", "Status");
-
-                    b.ToTable("CustomerSessions", (string)null);
                 });
 
             modelBuilder.Entity("QROrdering.Domain.Entities.Ordering.Notification", b =>
@@ -1115,6 +1111,26 @@ namespace QROrdering.Infrastructure.Migrations
                     b.ToTable("UserSessions", (string)null);
                 });
 
+            modelBuilder.Entity("CustomerSession", b =>
+                {
+                    b.HasOne("QROrdering.Domain.Entities.RestaurantManagement.Restaurant", "Restaurant")
+                        .WithMany("CustomerSessions")
+                        .HasForeignKey("RestaurantId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.HasOne("QROrdering.Domain.Entities.RestaurantManagement.RestaurantTable", "RestaurantTable")
+                        .WithMany("CustomerSessions")
+                        .HasForeignKey("RestaurantId", "TableId")
+                        .HasPrincipalKey("RestaurantId", "Id")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("Restaurant");
+
+                    b.Navigation("RestaurantTable");
+                });
+
             modelBuilder.Entity("QROrdering.Domain.Entities.Authorization.Role", b =>
                 {
                     b.HasOne("QROrdering.Domain.Entities.RestaurantManagement.Restaurant", "Restaurant")
@@ -1214,26 +1230,6 @@ namespace QROrdering.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
-            modelBuilder.Entity("QROrdering.Domain.Entities.Ordering.CustomerSession", b =>
-                {
-                    b.HasOne("QROrdering.Domain.Entities.RestaurantManagement.Restaurant", "Restaurant")
-                        .WithMany("CustomerSessions")
-                        .HasForeignKey("RestaurantId")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.HasOne("QROrdering.Domain.Entities.RestaurantManagement.RestaurantTable", "RestaurantTable")
-                        .WithMany("CustomerSessions")
-                        .HasForeignKey("RestaurantId", "TableId")
-                        .HasPrincipalKey("RestaurantId", "Id")
-                        .OnDelete(DeleteBehavior.NoAction)
-                        .IsRequired();
-
-                    b.Navigation("Restaurant");
-
-                    b.Navigation("RestaurantTable");
-                });
-
             modelBuilder.Entity("QROrdering.Domain.Entities.Ordering.Notification", b =>
                 {
                     b.HasOne("QROrdering.Domain.Entities.RestaurantManagement.Restaurant", "Restaurant")
@@ -1268,7 +1264,7 @@ namespace QROrdering.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("QROrdering.Domain.Entities.Ordering.CustomerSession", "CustomerSession")
+                    b.HasOne("CustomerSession", "CustomerSession")
                         .WithMany("Orders")
                         .HasForeignKey("RestaurantId", "CustomerSessionId")
                         .HasPrincipalKey("RestaurantId", "Id")
@@ -1418,6 +1414,11 @@ namespace QROrdering.Infrastructure.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("CustomerSession", b =>
+                {
+                    b.Navigation("Orders");
+                });
+
             modelBuilder.Entity("QROrdering.Domain.Entities.Authorization.Permission", b =>
                 {
                     b.Navigation("RolePermissions");
@@ -1447,11 +1448,6 @@ namespace QROrdering.Infrastructure.Migrations
             modelBuilder.Entity("QROrdering.Domain.Entities.Membership.RestaurantMember", b =>
                 {
                     b.Navigation("MemberRoles");
-                });
-
-            modelBuilder.Entity("QROrdering.Domain.Entities.Ordering.CustomerSession", b =>
-                {
-                    b.Navigation("Orders");
                 });
 
             modelBuilder.Entity("QROrdering.Domain.Entities.Ordering.Order", b =>

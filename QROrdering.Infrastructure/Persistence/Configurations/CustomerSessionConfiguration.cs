@@ -27,12 +27,9 @@ namespace QROrdering.Infrastructure.Persistence.Configurations
             // PROPERTIES
             // ============================================================
 
-            builder.Property(x => x.CustomerName)
-                .HasMaxLength(100);
-
-            builder.Property(x => x.SessionToken)
+            builder.Property(x => x.SessionTokenHash)
                 .IsRequired()
-                .HasMaxLength(100);
+                .HasMaxLength(256);
 
             builder.Property(x => x.Status)
                 .IsRequired();
@@ -42,6 +39,7 @@ namespace QROrdering.Infrastructure.Persistence.Configurations
 
             builder.Property(x => x.EndedAt)
                 .IsRequired(false);
+
 
             // ============================================================
             // ALTERNATE KEY
@@ -54,11 +52,12 @@ namespace QROrdering.Infrastructure.Persistence.Configurations
                 x.Id
             });
 
+
             // ============================================================
             // INDEXES
             // ============================================================
 
-            builder.HasIndex(x => x.SessionToken)
+            builder.HasIndex(x => x.SessionTokenHash)
                 .IsUnique();
 
             builder.HasIndex(x => new
