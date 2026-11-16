@@ -1,11 +1,7 @@
-﻿namespace QROrdering.Domain.Enums
+﻿public enum OrderStatus
 {
-    public enum OrderStatus
-    {
-        Pending = 1,      // Đơn mới tạo
-        Confirmed = 2,    // Nhà hàng đã xác nhận
-        Preparing = 3,    // Đang chuẩn bị món
-        Completed = 4,    // Đã hoàn tất
-        Cancelled = 5     // Đã hủy
-    }
+    Pending = 1,    // Đơn mới được gửi
+    Preparing = 2,  // Nhà hàng đang xử lý đơn
+    Completed = 3,  // Đơn đã hoàn tất
+    Cancelled = 4   // Đơn đã bị hủy
 }

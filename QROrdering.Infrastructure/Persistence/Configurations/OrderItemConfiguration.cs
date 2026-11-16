@@ -26,6 +26,9 @@ namespace QROrdering.Infrastructure.Persistence.Configurations
             // ============================================================
             // PROPERTIES
             // ============================================================
+            builder.Property(x => x.ProductName)
+                .IsRequired()
+                .HasMaxLength(200);
 
             builder.Property(x => x.Quantity)
                 .IsRequired();
@@ -67,8 +70,8 @@ namespace QROrdering.Infrastructure.Persistence.Configurations
             // Cross-Tenant Protection:
             // OrderItem.RestaurantId + OrderItem.OrderId
             // phải cùng Restaurant với Order.
-            builder.HasOne<Order>()
-                .WithMany()
+            builder.HasOne(x => x.Order)
+                .WithMany(x => x.OrderItems)
                 .HasForeignKey(x => new
                 {
                     x.RestaurantId,

@@ -529,6 +529,11 @@ namespace QROrdering.Infrastructure.Migrations
                     b.Property<Guid>("ProductId")
                         .HasColumnType("uniqueidentifier");
 
+                    b.Property<string>("ProductName")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<int>("Quantity")
                         .HasColumnType("int");
 
@@ -1280,12 +1285,6 @@ namespace QROrdering.Infrastructure.Migrations
                 {
                     b.HasOne("QROrdering.Domain.Entities.Ordering.Order", "Order")
                         .WithMany("OrderItems")
-                        .HasForeignKey("OrderId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("QROrdering.Domain.Entities.Ordering.Order", null)
-                        .WithMany()
                         .HasForeignKey("RestaurantId", "OrderId")
                         .HasPrincipalKey("RestaurantId", "Id")
                         .OnDelete(DeleteBehavior.NoAction)
