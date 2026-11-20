@@ -33,5 +33,9 @@ namespace QROrdering.Application.Ordering.CustomerSessions.Interfaces
             string tokenHash);
 
         Task AddAsync(CustomerSession session);
+
+        Task<CustomerSession?> GetByIdForUpdateAsync(
+            Guid restaurantId,
+            Guid sessionId);
     }
 }

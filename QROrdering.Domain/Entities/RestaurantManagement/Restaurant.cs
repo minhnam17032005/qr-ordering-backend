@@ -25,7 +25,7 @@ namespace QROrdering.Domain.Entities.RestaurantManagement
 
         // Navigation Properties
         public ICollection<RestaurantTable> RestaurantTables { get; set; }
-    = new List<RestaurantTable>();
+            = new List<RestaurantTable>();
 
         public ICollection<Category> Categories { get; set; }
             = new List<Category>();
@@ -56,5 +56,8 @@ namespace QROrdering.Domain.Entities.RestaurantManagement
 
         public ICollection<ServiceRegistration> ServiceRegistrations { get; set; }
             = new List<ServiceRegistration>();
+
+        public ICollection<Payment> Payments { get; set; }
+            = new List<Payment>();
     }
 }

@@ -37,5 +37,10 @@ namespace QROrdering.Application.Ordering.Orders.Interfaces
             Guid restaurantId,
             Guid orderItemId,
             OrderItemStatusUpdateRequest request);
+
+        Task<OrderStatusResponse> CancelUncompletedItemsAsync(
+            Guid restaurantId,
+            Guid orderId);
+
     }
 }

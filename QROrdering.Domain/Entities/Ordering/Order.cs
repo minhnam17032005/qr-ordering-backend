@@ -27,8 +27,6 @@ namespace QROrdering.Domain.Entities.Ordering
         public ICollection<OrderItem> OrderItems { get; set; }
             = new List<OrderItem>();
 
-        public ICollection<Payment> Payments { get; set; }
-            = new List<Payment>();
 
         public ICollection<Notification> Notifications { get; set; }
             = new List<Notification>();

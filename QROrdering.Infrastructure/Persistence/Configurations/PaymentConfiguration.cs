@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using QROrdering.Domain.Entities.Ordering;
 
@@ -40,15 +41,35 @@ namespace QROrdering.Infrastructure.Persistence.Configurations
             builder.Property(x => x.TransactionCode)
                 .HasMaxLength(100);
 
-            builder.Property(x => x.PaidAt);
+            builder.Property(x => x.PaidAt)
+                .IsRequired(false);
+
+
+            // ============================================================
+            // ALTERNATE KEY
+            // ============================================================
+
+            /*// Principal key dùng cho Composite FK chống Cross-Tenant
+            builder.HasAlternateKey(x => new
+            {
+                x.RestaurantId,
+                x.Id
+            });*/
 
 
             // ============================================================
             // INDEXES
             // ============================================================
 
-            // Lấy Payment theo Order
-            builder.HasIndex(x => x.OrderId);
+            // Tìm Payment theo Restaurant
+            builder.HasIndex(x => x.RestaurantId);
+
+            // Tìm Payment theo CustomerSession
+            builder.HasIndex(x => new
+            {
+                x.RestaurantId,
+                x.CustomerSessionId
+            });
 
             // Tìm giao dịch theo TransactionCode
             builder.HasIndex(x => x.TransactionCode)
@@ -60,10 +81,29 @@ namespace QROrdering.Infrastructure.Persistence.Configurations
             // RELATIONSHIPS
             // ============================================================
 
-            // Order 1 - N Payment
-            builder.HasOne(x => x.Order)
+            // Restaurant 1 - N Payment
+            builder.HasOne(x => x.Restaurant)
                 .WithMany(x => x.Payments)
-                .HasForeignKey(x => x.OrderId)
+                .HasForeignKey(x => x.RestaurantId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+
+            // CustomerSession 1 - N Payment
+            // Cross-Tenant Protection:
+            // Payment.RestaurantId + Payment.CustomerSessionId
+            // phải cùng Restaurant với CustomerSession.
+            builder.HasOne(x => x.CustomerSession)
+                .WithMany(x => x.Payments)
+                .HasForeignKey(x => new
+                {
+                    x.RestaurantId,
+                    x.CustomerSessionId
+                })
+                .HasPrincipalKey(x => new
+                {
+                    x.RestaurantId,
+                    x.Id
+                })
                 .OnDelete(DeleteBehavior.NoAction);
         }
     }

@@ -135,5 +135,19 @@ namespace QROrdering.Infrastructure.Ordering.CustomerSessions
             _context.CustomerSessions.Add(session);
             return Task.CompletedTask;
         }
+
+        public async Task<CustomerSession?> GetByIdForUpdateAsync(
+            Guid restaurantId,
+            Guid sessionId)
+        {
+            return await _context.CustomerSessions
+                .FromSqlInterpolated($@"
+            SELECT *
+            FROM [CustomerSessions] WITH (UPDLOCK, HOLDLOCK)
+            WHERE [RestaurantId] = {restaurantId}
+              AND [Id] = {sessionId}")
+                .AsTracking()
+                .FirstOrDefaultAsync();
+        }
     }
 }

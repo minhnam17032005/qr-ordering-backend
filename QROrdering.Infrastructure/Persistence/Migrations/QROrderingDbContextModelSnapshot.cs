@@ -579,7 +579,7 @@ namespace QROrdering.Infrastructure.Migrations
                         .HasColumnType("datetime2")
                         .HasDefaultValueSql("GETUTCDATE()");
 
-                    b.Property<Guid>("OrderId")
+                    b.Property<Guid>("CustomerSessionId")
                         .HasColumnType("uniqueidentifier");
 
                     b.Property<DateTime?>("PaidAt")
@@ -587,6 +587,9 @@ namespace QROrdering.Infrastructure.Migrations
 
                     b.Property<int>("PaymentMethod")
                         .HasColumnType("int");
+
+                    b.Property<Guid>("RestaurantId")
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<int>("Status")
                         .HasColumnType("int");
@@ -600,11 +603,13 @@ namespace QROrdering.Infrastructure.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("OrderId");
+                    b.HasIndex("RestaurantId");
 
                     b.HasIndex("TransactionCode")
                         .IsUnique()
                         .HasFilter("[TransactionCode] IS NOT NULL");
+
+                    b.HasIndex("RestaurantId", "CustomerSessionId");
 
                     b.ToTable("Payments", (string)null);
                 });
@@ -1304,13 +1309,22 @@ namespace QROrdering.Infrastructure.Migrations
 
             modelBuilder.Entity("QROrdering.Domain.Entities.Ordering.Payment", b =>
                 {
-                    b.HasOne("QROrdering.Domain.Entities.Ordering.Order", "Order")
+                    b.HasOne("QROrdering.Domain.Entities.RestaurantManagement.Restaurant", "Restaurant")
                         .WithMany("Payments")
-                        .HasForeignKey("OrderId")
+                        .HasForeignKey("RestaurantId")
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.Navigation("Order");
+                    b.HasOne("CustomerSession", "CustomerSession")
+                        .WithMany("Payments")
+                        .HasForeignKey("RestaurantId", "CustomerSessionId")
+                        .HasPrincipalKey("RestaurantId", "Id")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
+                    b.Navigation("CustomerSession");
+
+                    b.Navigation("Restaurant");
                 });
 
             modelBuilder.Entity("QROrdering.Domain.Entities.Ordering.RevenueDaily", b =>
@@ -1416,6 +1430,8 @@ namespace QROrdering.Infrastructure.Migrations
             modelBuilder.Entity("CustomerSession", b =>
                 {
                     b.Navigation("Orders");
+
+                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("QROrdering.Domain.Entities.Authorization.Permission", b =>
@@ -1454,8 +1470,6 @@ namespace QROrdering.Infrastructure.Migrations
                     b.Navigation("Notifications");
 
                     b.Navigation("OrderItems");
-
-                    b.Navigation("Payments");
                 });
 
             modelBuilder.Entity("QROrdering.Domain.Entities.Platform.PlatformAdmin", b =>
@@ -1486,6 +1500,8 @@ namespace QROrdering.Infrastructure.Migrations
                     b.Navigation("OrderHistories");
 
                     b.Navigation("Orders");
+
+                    b.Navigation("Payments");
 
                     b.Navigation("Products");
 

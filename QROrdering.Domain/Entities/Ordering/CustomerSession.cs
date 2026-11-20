@@ -19,4 +19,6 @@ public class CustomerSession : BaseEntity
     public RestaurantTable RestaurantTable { get; set; } = null!;
 
     public ICollection<Order> Orders { get; set; } = new List<Order>();
+
+    public ICollection<Payment> Payments { get; set; } = new List<Payment>();
 }

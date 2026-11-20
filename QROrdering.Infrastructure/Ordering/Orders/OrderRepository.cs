@@ -239,5 +239,31 @@ namespace QROrdering.Infrastructure.Ordering.Orders
             _context.Orders.Add(order);
             return Task.CompletedTask;
         }
+
+        public async Task<Guid?> GetOrderSessionIdAsync(
+            Guid restaurantId,
+            Guid orderId)
+        {
+            return await _context.Orders
+                .AsNoTracking()
+                .Where(x =>
+                    x.RestaurantId == restaurantId &&
+                    x.Id == orderId)
+                .Select(x => (Guid?)x.CustomerSessionId)
+                .FirstOrDefaultAsync();
+        }
+
+        public async Task<Guid?> GetOrderItemSessionIdAsync(
+            Guid restaurantId,
+            Guid orderItemId)
+        {
+            return await _context.OrderItems
+                .AsNoTracking()
+                .Where(x =>
+                    x.RestaurantId == restaurantId &&
+                    x.Id == orderItemId)
+                .Select(x => (Guid?)x.Order.CustomerSessionId)
+                .FirstOrDefaultAsync();
+        }
     }
 }

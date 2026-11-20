@@ -85,5 +85,22 @@ namespace QROrdering.API.Controllers.Ordering
 
             return this.ApiOk(response, "Cập nhật trạng thái món thành công.");
         }
+
+        [HttpPatch("orders/{orderId:guid}/cancel-uncompleted-items")]
+        [ProducesResponseType(typeof(ApiResponse<OrderStatusResponse>), StatusCodes.Status200OK)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(ErrorResponse), StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<ApiResponse<OrderStatusResponse>>> CancelUncompletedItems(
+            Guid restaurantId,
+            Guid orderId)
+        {
+            var response = await _orderService.CancelUncompletedItemsAsync(
+                restaurantId,
+                orderId);
+
+            return this.ApiOk(
+                response,
+                "Hủy các món chưa hoàn thành thành công.");
+        }
     }
 }

@@ -46,5 +46,13 @@ namespace QROrdering.Application.Ordering.Orders.Interfaces
             Guid orderItemId);
 
         Task AddAsync(Order order);
+
+        Task<Guid?> GetOrderSessionIdAsync(
+            Guid restaurantId,
+            Guid orderId);
+
+        Task<Guid?> GetOrderItemSessionIdAsync(
+            Guid restaurantId,
+            Guid orderItemId);
     }
 }
